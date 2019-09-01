@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+# NORMY - stoper
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSlot, QRegExp, Qt
-from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QTableView, QGroupBox, QLabel, QLineEdit, \
-    QAbstractItemView, QInputDialog
+from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, \
+    QSqlRelation, QSqlRelationalDelegate
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, \
+    QTableView, QGroupBox, QLabel, QLineEdit, \
+    QInputDialog
 
 from baza import multipolaczenie, polaczenie, update_bazy
 
 
-def listaNorm():
+def lista_norm():
     query = "SELECT nr_detalu FROM detale"
     return multipolaczenie(query)
 
@@ -38,12 +41,13 @@ class Norma(QWidget):
         self.db.setDatabaseName('poo.db')
         if self.db.open():
             print('Otworzono bazę danych')
-        self.model = QSqlTableModel(self, self.db)
+        self.model = QSqlRelationalTableModel(self, self.db)
         self.initUI()
 
     def initUI(self):
         # Zainicjowanie tabeli zawsze przed wszystkim
         self.tabela()
+
 
         # Zatwierdzenie
         ok_button = QPushButton("Dodaj")
@@ -123,11 +127,12 @@ class Norma(QWidget):
                 norma = 0
             print(round(norma))
             # update bazy
-            query = 'UPDATE "detale" SET "tj" = ' + str(round(tjh, 5)) + ', "norma" = ' + str(round(
+            query = 'UPDATE "detale" SET "tj" = ' + str(
+                round(tjh, 5)) + ', "norma" = ' + str(round(
                 norma)) + ' WHERE "iddetale" = ' + str(dane_db[i][0])
             update_bazy(query)
-            # query = 'UPDATE "detale" SET "norma" = ' + str(round(norma)) + ' WHERE "iddetale" = ' + str(dane_db[i][0])
-            # update_bazy(query)
+            # query = 'UPDATE "detale" SET "norma" = ' + str(round(norma)) +
+            # ' WHERE "iddetale" = ' + str(dane_db[i][0]) update_bazy(query)
 
     @pyqtSlot()
     def refresh_db(self):
@@ -140,6 +145,8 @@ class Norma(QWidget):
 
     def tabela(self):
         self.model.setTable('detale')
+        self.model.setRelation(9, QSqlRelation('uzytkownicy', 'iduzytkownicy',
+                                               'nazwa_uz'))
         # Za zmianę w bazie odpowiada OnFieldChange
         self.model.setEditStrategy(QSqlTableModel.OnFieldChange)
 
@@ -147,7 +154,8 @@ class Norma(QWidget):
         ilosc_kolumn = self.model.columnCount()
         for i in range(ilosc_kolumn):
             nazwa_kolumn = self.model.headerData(i, Qt.Horizontal)
-            self.model.setHeaderData(i, Qt.Horizontal, self.naglowki[nazwa_kolumn])
+            self.model.setHeaderData(i, Qt.Horizontal,
+                                     self.naglowki[nazwa_kolumn])
         self.model.select()
 
         # self.table.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -168,7 +176,8 @@ class Norma(QWidget):
         text, ok = QInputDialog.getText(self, 'Wprowadź pozycje', 'Pozycja:')
         id = self.parent.id_user[0]
         if ok and text:
-            query = "INSERT INTO detale(nr_detalu,id_uzytkownika) VALUES ('" + text + "','" + str(id) + "');"
+            query = "INSERT INTO detale(nr_detalu,id_uzytkownika) VALUES ('" + text + "','" + str(
+                id) + "');"
             print(query)
             polaczenie(query)
             self.model.select()

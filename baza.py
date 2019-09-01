@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# POŁĄCZENIE Z BAZĄ
 from sqlite3 import connect
 
 
@@ -9,7 +10,7 @@ def polaczenie(query=None, tab=None):
         cur = con.cursor()
         print("Połączono z bazą danych")
 
-        if query and tab == None:
+        if query and tab is None:
             cur.execute(query)
         elif query and tab:
             cur.execute(query, tab)
@@ -28,7 +29,7 @@ def multipolaczenie(query=None, tab=None):
         cur = con.cursor()
         print("Połączono z bazą danych")
 
-        if query and tab == None:
+        if query and tab is None:
             cur.execute(query)
         elif query and tab:
             cur.execute(query, tab)

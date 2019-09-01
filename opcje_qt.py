@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+# GŁÓWNE MENU
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPalette, QColor, QIcon
 from PyQt5.QtWidgets import QWidget, QComboBox, QGridLayout, QHBoxLayout, \
     QPushButton, QLabel, QVBoxLayout, QLineEdit, QGroupBox, QFormLayout, \
-    QMessageBox
+    QMessageBox, QToolButton
 
 from baza import polaczenie
 from narzedzia_poz import NarzPoz
@@ -126,9 +127,11 @@ class WprowadzNarzedzia(QWidget):
         self.rodzaj = self.usuwanie_layoutow(tekst)
 
     def dodanie(self):
+        global tab, query
         tab_select = []
         if self.rodzaj == 'Frez palcowy':
-            query = "INSERT INTO frezy_palcowe(symbol_freza, producent_fr, srednica_fr, dl_fr, dl_rob_fr) VALUES(?,?,?,?,?)"
+            query = "INSERT INTO frezy_palcowe(symbol_freza, producent_fr, " \
+                    "srednica_fr, dl_fr, dl_rob_fr) VALUES(?,?,?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -142,7 +145,9 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_freza'
             ]
         if self.rodzaj == 'Frez płytkowy (głowica)':
-            query = "INSERT INTO frezy_plytkowe(symbol_freza_pl, producent_fp, srednica_fr_pl, ilosc_plytek, symbol_pl,ilosc_krawedzi_pl) VALUES(?,?,?,?,?,?)"
+            query = "INSERT INTO frezy_plytkowe(symbol_freza_pl, " \
+                    "producent_fp, srednica_fr_pl, ilosc_plytek, symbol_pl," \
+                    "ilosc_krawedzi_pl) VALUES(?,?,?,?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -157,7 +162,8 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_frez_pl'
             ]
         if self.rodzaj == 'Gwintownik':
-            query = "INSERT INTO gwintowniki(symbol_g, producent_gw, rozmiar_gwintu, typ_gwintownika) VALUES(?,?,?,?)"
+            query = "INSERT INTO gwintowniki(symbol_g, producent_gw, " \
+                    "rozmiar_gwintu, typ_gwintownika) VALUES(?,?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -170,7 +176,8 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_g'
             ]
         if self.rodzaj == 'Nóż tokarski':
-            query = "INSERT INTO noze_tokarskie(symbol_n, producent_n, plytki_n, ilosc_krawedzi_pl_n) VALUES(?,?,?,?)"
+            query = "INSERT INTO noze_tokarskie(symbol_n, producent_n, " \
+                    "plytki_n, ilosc_krawedzi_pl_n) VALUES(?,?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -183,7 +190,8 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_n'
             ]
         if self.rodzaj == 'Oprawka':
-            query = "INSERT INTO oprawki(typ_oprawki, producent_opr, dl_opr, srednica_wew, srednica_zew) VALUES(?,?,?,?,?)"
+            query = "INSERT INTO oprawki(typ_oprawki, producent_opr, dl_opr, " \
+                    "srednica_wew, srednica_zew) VALUES(?,?,?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -197,7 +205,9 @@ class WprowadzNarzedzia(QWidget):
                 'typ_oprawki'
             ]
         if self.rodzaj == 'Piła':
-            query = "INSERT INTO pily(symbol_p, producent_pil, srednica_p, grubosc_p, rodzaj_pl_p,ilosc_pl_p,ilosc_kraw_p) VALUES(?,?,?,?,?,?,?)"
+            query = "INSERT INTO pily(symbol_p, producent_pil, srednica_p, " \
+                    "grubosc_p, rodzaj_pl_p,ilosc_pl_p,ilosc_kraw_p) VALUES(" \
+                    "?,?,?,?,?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -213,7 +223,9 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_p'
             ]
         if self.rodzaj == 'Pozostałe':
-            query = "INSERT INTO pozostale(symbol_poz, producent_poz, srednica_poz, ilosc_pl_poz, plytki_poz) VALUES(?,?,?,?,?)"
+            query = "INSERT INTO pozostale(symbol_poz, producent_poz, " \
+                    "srednica_poz, ilosc_pl_poz, plytki_poz) VALUES(?,?,?,?," \
+                    "?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -227,7 +239,8 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_poz'
             ]
         if self.rodzaj == 'Rozwiertak':
-            query = "INSERT INTO rozwiertaki(symbol_r, producent_roz, rozmiar_r) VALUES(?,?,?)"
+            query = "INSERT INTO rozwiertaki(symbol_r, producent_roz, " \
+                    "rozmiar_r) VALUES(?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -239,7 +252,8 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_r'
             ]
         if self.rodzaj == 'Wiertło':
-            query = "INSERT INTO wiertla(symbol_w, producent_w, srednica_w, dlugosc_w) VALUES(?,?,?,?)"
+            query = "INSERT INTO wiertla(symbol_w, producent_w, srednica_w, " \
+                    "dlugosc_w) VALUES(?,?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -252,7 +266,9 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_w'
             ]
         if self.rodzaj == 'Wiertło składane':
-            query = "INSERT INTO wiertla_skladane(symbol_w_skl, producent_ws, srednica_w_skl, plytki_w_skl) VALUES(?,?,?,?)"
+            query = "INSERT INTO wiertla_skladane(symbol_w_skl, " \
+                    "producent_ws, srednica_w_skl, plytki_w_skl) VALUES(?,?," \
+                    "?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -265,7 +281,8 @@ class WprowadzNarzedzia(QWidget):
                 'symbol_w_skl'
             ]
         if self.rodzaj == 'Wygniatak':
-            query = "INSERT INTO wygniataki(symbol_wyg, producent_wyg, rozmiar_gw) VALUES(?,?,?)"
+            query = "INSERT INTO wygniataki(symbol_wyg, producent_wyg, " \
+                    "rozmiar_gw) VALUES(?,?,?) "
             tab = (
                 self.symbol_edit.text(),
                 self.producent_edit.text(),
@@ -286,7 +303,8 @@ class WprowadzNarzedzia(QWidget):
                                 QMessageBox.Ok)
         elif self.symbol_edit.text() == "":
             QMessageBox.critical(self, "Brak symbolu narzędzia",
-                                 "Nie można dodać narzędzia bez wpisania symbolu",
+                                 "Nie można dodać narzędzia bez wpisania "
+                                 "symbolu",
                                  QMessageBox.Ok)
         else:
             polaczenie(query, tab)
@@ -426,24 +444,30 @@ class Wewnatrz(QWidget):
         grid = QGridLayout()
         self.setLayout(grid)
 
-        btn_wpr_n = QPushButton()
-        btn_wpr_norm = QPushButton()
-        btn_przyp = QPushButton()
+        btn_wpr_n = QToolButton()
+        btn_wpr_norm = QToolButton()
+        btn_przyp = QToolButton()
 
         btn_wpr_n.setIcon(QIcon('icons\\narzedzia.png'))
         btn_wpr_n.setIconSize(QSize(128, 128))
         btn_wpr_n.setToolTip('Wprowadź narzędzia')
-        btn_wpr_n.setToolTipDuration(0)
+        btn_wpr_n.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        btn_wpr_n.setText("Wprowadź narzędzia")
+        btn_wpr_n.setToolTipDuration(0.5)
         # btn_wpr_n.setFlat(True)
         btn_wpr_norm.setIcon(QIcon('icons\\stoper.png'))
         btn_wpr_norm.setIconSize(QSize(128, 128))
+        btn_wpr_norm.setText('Wprowadź normy')
+        btn_wpr_norm.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         btn_wpr_norm.setToolTip('Wprowadź normy')
-        btn_wpr_norm.setToolTipDuration(0)
+        btn_wpr_norm.setToolTipDuration(0.5)
         # btn_wpr_norm.setFlat(True)
         btn_przyp.setIcon(QIcon('icons\\poz_narz.png'))
         btn_przyp.setIconSize(QSize(128, 128))
+        btn_przyp.setText('Przypisz narzędzia do pozycji')
+        btn_przyp.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         btn_przyp.setToolTip('Przypisz narzędzia do pozycji')
-        btn_przyp.setToolTipDuration(0)
+        btn_przyp.setToolTipDuration(0.5)
         # btn_przyp.setFlat(True)
 
         grid.addWidget(btn_wpr_n, 0, 0)
