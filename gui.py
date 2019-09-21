@@ -6,7 +6,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPalette, QColor
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
     QHBoxLayout, QVBoxLayout, QLineEdit, QGroupBox, QDialog, QFormLayout, \
-    QLabel, QMainWindow, QAction, QInputDialog
+    QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog
 
 from baza import polaczenie
 from opcje_qt import Wewnatrz
@@ -94,6 +94,11 @@ class Logowanie(QDialog):
             self.accept()
         else:
             print("Coś jest nie tak...")
+            QMessageBox.information(self, 'Błąd logowania', "Niepoprawne "
+                                                            "hasło lub login"
+                                                            " \nSpróbuj "
+                                                            "ponownie",
+                                    QMessageBox.Ok, QMessageBox.Ok)
 
 
 class Window(QMainWindow):
@@ -102,8 +107,8 @@ class Window(QMainWindow):
         self.id_user = user
         self.widget = Wewnatrz(self)
         self.title = 'Wykaz narzędzi'
-        self.width = 854
-        self.height = 480
+        self.width = 1440
+        self.height = 900
 
         # Edycja podwietlenia głównego okna
         paleta = self.palette()
@@ -129,10 +134,10 @@ class Window(QMainWindow):
         # wysw_act2.triggered.connect(self.close)
 
         # Wydruk
-        wydr_act1 = QAction('Wydrukuj do pliku', self)
+        wydr_act1 = QAction('Wydrukuj normy do pliku', self)
         # wydr_act1.setShortcut('Ctrl+Q')
-        # wydr_act1.triggered.connect(self.close)
-        wydr_act2 = QAction('Wydrukuj na drukarkę', self)
+        wydr_act1.triggered.connect(self.export_norma)
+        wydr_act2 = QAction('Wydrukuj wykaz narzędzi do pliku', self)
         # wydr_act2.setShortcut('Ctrl+Q')
         # wydr_act2.triggered.connect(self.close)
 
@@ -173,8 +178,93 @@ class Window(QMainWindow):
                                         QLineEdit.Password)
         if ok and text:
             opcje_uzytkownik(text, id_user)
-        # uzytk = Uzytkownik(self)
-        # self.setCentralWidget(uzytk)
+
+    # uzytk = Uzytkownik(self)
+    # self.setCentralWidget(uzytk)
+
+    def export_norma(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getSaveFileName(
+            self,
+            "Zapisywanie jako",
+            "",
+            "Skoroszyt programu Excel (*.xlsx);",
+            options=options
+        )
+        if fileName:
+            print(fileName)
+
+        from xlsxwriter import Workbook
+        workbook = Workbook(fileName)
+        worksheet = workbook.add_worksheet()
+
+        import sqlite3
+        conn = sqlite3.connect('poo.db')
+        cursor = conn.cursor()
+        mysel = cursor.execute('SELECT * FROM detale')
+        for i, row in enumerate(mysel):
+            for j, value in enumerate(row):
+                worksheet.write(i, j, value)
+        workbook.close()
+
+        stylizacja(fileName)
+
+
+def stylizacja(plik):
+    from openpyxl import load_workbook
+    from openpyxl.utils import get_column_letter
+    from openpyxl.worksheet.table import Table, TableStyleInfo
+
+    lista = [
+        'Detal',
+        'Maszyna',
+        'Ilość maszyn',
+        'Ilość raportowanych sztuk',
+        'Numer operacji',
+        'Norma',
+        'Uwagi'
+    ]
+
+    szer = 0.71
+    szer_lista = [
+        7.14,
+        11.86,
+        11.29,
+        23.43,
+        14.14,
+        6.29,
+        20
+    ]
+    work = load_workbook(plik)
+    worksheet = work[work.sheetnames[0]]
+    worksheet.insert_rows(0)
+    worksheet.delete_cols(12)
+    worksheet.delete_cols(7, 3)
+    worksheet.delete_cols(1)
+
+    for h in range(7):
+        worksheet.column_dimensions[get_column_letter(h + 1)].width = \
+            szer_lista[h] + szer
+
+    for i, col in enumerate(lista):
+        worksheet.cell(row=1, column=i + 1).value = col
+
+    # tabela
+    rozmiar = 'A1:G' + str(len(worksheet['A']))
+    tab = Table(displayName='Table1', ref=rozmiar)
+    style = TableStyleInfo(
+        name='TableStyleMedium1',
+        showFirstColumn=False,
+        showLastColumn=False,
+        showRowStripes=True,
+        showColumnStripes=False
+    )
+    tab.tableStyleInfo = style
+    worksheet.add_table(tab)
+
+    work.save(plik)
+    work.close()
+    print('Udane')
 
 
 def aplikacja():
