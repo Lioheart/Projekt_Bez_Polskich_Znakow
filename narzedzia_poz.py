@@ -18,7 +18,7 @@ class NarzPoz(QWidget):
         self.edit_wysz = QLineEdit(self)
         self.combo_typ = QComboBox(self)
         self.lbl_wysz = QLabel("Wyszukaj")
-        self.lbl_typ = QLabel("Wybierz typ narzędzia")
+        self.lbl_typ = QLabel("Wybierz typ narzędzia:")
         self.combo_poz = QComboBox(self)
         self.lbl_poz = QLabel("Wybierz pozycję:")
         self.listaPozycji = []

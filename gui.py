@@ -3,10 +3,13 @@
 import sys
 
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSortFilterProxyModel, Qt, pyqtSlot, QRegExp
 from PyQt5.QtGui import QIcon, QPalette, QColor
+from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
     QHBoxLayout, QVBoxLayout, QLineEdit, QGroupBox, QDialog, QFormLayout, \
-    QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog
+    QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog, \
+    QWidget, QComboBox, QTableView, QAbstractItemView
 
 from baza import polaczenie
 from opcje_qt import Wewnatrz
@@ -101,6 +104,188 @@ class Logowanie(QDialog):
                                     QMessageBox.Ok, QMessageBox.Ok)
 
 
+class Wyswietl(QWidget):
+    def __init__(self, parent):
+        super(QWidget, self).__init__(parent)
+        self.parent = parent
+        self.proxy = QSortFilterProxyModel(self)
+        self.edit_wysz = QLineEdit(self)
+        self.combo_typ = QComboBox(self)
+        self.lbl_wysz = QLabel("Wyszukaj")
+        self.lbl_typ = QLabel("Wybierz typ narzędzia:")
+        self.table = QTableView(self)
+        db = QSqlDatabase.addDatabase('QSQLITE')
+        db.setDatabaseName('poo.db')
+        if db.open():
+            print('Otworzono bazę danych')
+        self.model = QSqlTableModel(self, db)
+
+        self.formularz = QGroupBox("Wyświetl narzędzia")
+        self.initUI()
+
+    def initUI(self):
+        typy_narzedzi = [
+            'Brak',
+            'Frez palcowy',
+            'Frez płytkowy (głowica)',
+            'Gwintownik',
+            'Nóż tokarski',
+            # 'Oprawka',
+            'Piła',
+            'Pozostałe',
+            'Rozwiertak',
+            'Wiertło',
+            'Wiertło składane',
+            'Wygniatak'
+        ]
+        self.widok()
+        self.combo_typ.addItems(typy_narzedzi)
+
+        cancel_button = QPushButton("Cofnij")
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(cancel_button)
+
+        l_h = QHBoxLayout()
+        l_h.addWidget(self.lbl_typ)
+        l_h.addWidget(self.combo_typ)
+
+        l_h2 = QHBoxLayout()
+        l_h2.addWidget(self.lbl_wysz)
+        l_h2.addWidget(self.edit_wysz)
+
+        layout_v = QVBoxLayout()
+        layout_v.addLayout(l_h)
+        layout_v.addLayout(l_h2)
+        layout_v.addWidget(self.table)
+
+        self.proxy.setSourceModel(self.model)
+        self.table.setModel(self.proxy)
+
+        main_layout = QVBoxLayout()
+        self.formularz.setLayout(layout_v)
+        main_layout.addWidget(self.formularz)
+        main_layout.addLayout(hbox)
+        self.setLayout(main_layout)
+
+        cancel_button.clicked.connect(self.anulowanie)
+        self.edit_wysz.textChanged.connect(self.wyszukiwanie)
+        self.combo_typ.activated[str].connect(self.onActiveNarz)
+
+    def onActiveNarz(self, tekst):
+        slownik = {
+            'Frez palcowy': 'frezy_palcowe',
+            'Frez płytkowy (głowica)': 'frezy_plytkowe',
+            'Gwintownik': 'gwintowniki',
+            'Nóż tokarski': 'noze_tokarskie',
+            'Oprawka': 'oprawki',
+            'Piła': 'pily',
+            'Pozostałe': 'pozostale',
+            'Rozwiertak': 'rozwiertaki',
+            'Wiertło': 'wiertla',
+            'Wiertło składane': 'wiertla_skladane',
+            'Wygniatak': 'wygniataki',
+            'Brak': ''
+        }
+        naglowki = {
+            'idfrezy_palcowe': 'ID',
+            'symbol_freza': 'Symbol',
+            'producent_fr': 'Producent',
+            'srednica_fr': 'Średnica',
+            'dl_fr': 'Długość całkowita',
+            'dl_rob_fr': 'Długość robocza',
+            'idfrezy_plytkowe': 'ID',
+            'symbol_frez_pl': 'Symbol',
+            'producent_fp': 'Producent',
+            'srednica_fr_pl': 'Średnica',
+            'ilosc_plytek': 'Ilość płytek',
+            'symbol_pl': 'Symbol płytek',
+            'ilosc_krawedzi_pl': 'Ilość krawędzi płytki',
+            'idgwintowniki': 'ID',
+            'symbol_g': 'Symbol',
+            'producent_gw': 'Producent',
+            'rozmiar_gwintu': 'Rozmiar gwintu i skok',
+            'typ_gwintownika': 'Typ gwintownika',
+            'idnoze_tokarskie': 'ID',
+            'symbol_n': 'Symbol',
+            'producent_n': 'Producent',
+            'plytki_n': 'Symbol płytek',
+            'ilosc_krawedzi_pl_n': 'Ilość krawędzi',
+            'idpily': 'ID',
+            'symbol_p': 'Symbol',
+            'producent_pil': 'Producent',
+            'srednica_p': 'Średnica',
+            'grubosc_p': 'Grubość',
+            'rodzaj_pl_p': 'Symbol płytek',
+            'ilosc_pl_p': 'Ilość płytek',
+            'ilosc_kraw_p': 'Ilość krawędzi płytki',
+            'idpozostale': 'ID',
+            'symbol_poz': 'Symbol',
+            'producent_poz': 'Producent',
+            'srednica_poz': 'Średnica',
+            'ilosc_pl_poz': 'Ilość płytek',
+            'plytki_poz': 'Symbol płytek',
+            'idrozwiertaki': 'ID',
+            'symbol_r': 'Symbol',
+            'producent_roz': 'Producent',
+            'rozmiar_r': 'Rozmiar',
+            'idwiertla': 'ID',
+            'symbol_w': 'Symbol',
+            'producent_w': 'Producent',
+            'srednica_w': 'Średnica',
+            'dlugosc_w': 'Długość [mm]',
+            'idwiertla_skladane': 'ID',
+            'symbol_w_skl': 'Symbol',
+            'producent_ws': 'Producent',
+            'srednica_w_skl': 'Średnica',
+            'plytki_w_skl': 'Symbol płytek',
+            'idwygniataki': 'ID',
+            'symbol_wyg': 'Symbol',
+            'producent_wyg': 'Producent',
+            'rozmiar_gw': 'Rozmiar gwintu'
+        }
+        self.model.setTable(slownik[tekst])
+        self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.model.select()
+
+        # Ustawianie nagłówków
+        ilosc_kolumn = self.model.columnCount()
+        for i in range(ilosc_kolumn):
+            nazwa_kolumn = self.model.headerData(i, Qt.Horizontal)
+            self.model.setHeaderData(i, Qt.Horizontal, naglowki[nazwa_kolumn])
+
+    @pyqtSlot(str)
+    def wyszukiwanie(self, text):
+        search = QRegExp(text,
+                         Qt.CaseInsensitive,
+                         QRegExp.RegExp
+                         )
+        self.proxy.setFilterRegExp(search)
+        # Odpowiedzialne za kolumnę, po której filtruje
+        self.proxy.setFilterKeyColumn(-1)
+
+    def widok(self):
+        # Ustawianie własciwości widoku
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setSortingEnabled(True)
+        self.table.setModel(self.model)
+
+    def anulowanie(self):
+        self.parent.statusBar().clearMessage()
+        from opcje_qt import Wewnatrz
+        menu_gl = Wewnatrz(self.parent)
+        self.parent.setCentralWidget(menu_gl)
+
+
+class About(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('O mnie...')
+
+
 class Window(QMainWindow):
     def __init__(self, user):
         super().__init__()
@@ -128,10 +313,10 @@ class Window(QMainWindow):
         # todo zaproponowanie skrótów
         wysw_act1 = QAction('Wyświetl normy pozycji', self)
         # wysw_act1.setShortcut('Ctrl+Q')
-        # wysw_act1.triggered.connect(self.close)
+        wysw_act1.triggered.connect(self.widget.norma)
         wysw_act2 = QAction('Wyświetl narzędzia pozycji', self)
         # wysw_act2.setShortcut('Ctrl+Q')
-        # wysw_act2.triggered.connect(self.close)
+        wysw_act2.triggered.connect(self.wyswietl)
 
         # Wydruk
         wydr_act1 = QAction('Wydrukuj normy do pliku', self)
@@ -149,7 +334,7 @@ class Window(QMainWindow):
         opcje_act2.triggered.connect(self.nowy_uzytkownik)
         opcje_act3 = QAction('Informacje o autorze', self)
         # opcje_act2.setShortcut('Ctrl+Q')
-        # opcje_act2.triggered.connect(self.close)
+        opcje_act3.triggered.connect(self.about)
 
         menubar = self.menuBar()
         wyswietlanie = menubar.addMenu('Wyświetl')
@@ -166,6 +351,10 @@ class Window(QMainWindow):
 
         self.show()
 
+    def wyswietl(self):
+        wysw = Wyswietl(self)
+        self.setCentralWidget(wysw)
+
     def nowy_uzytkownik(self):
         text, ok = QInputDialog.getText(self, 'Dodaj użytkownika',
                                         'Wprowadź nowego użytkownika:')
@@ -179,6 +368,10 @@ class Window(QMainWindow):
         if ok and text:
             opcje_uzytkownik(text, id_user)
 
+    def about(self):
+        o_mnie = About()
+        o_mnie.show()
+
     # uzytk = Uzytkownik(self)
     # self.setCentralWidget(uzytk)
 
@@ -187,27 +380,30 @@ class Window(QMainWindow):
         fileName, _ = QFileDialog.getSaveFileName(
             self,
             "Zapisywanie jako",
-            "",
-            "Skoroszyt programu Excel (*.xlsx);",
+            "Normy",
+            "Skoroszyt programu Excel (*.xlsx)",
             options=options
         )
         if fileName:
             print(fileName)
 
-        from xlsxwriter import Workbook
-        workbook = Workbook(fileName)
-        worksheet = workbook.add_worksheet()
+            from xlsxwriter import Workbook
+            workbook = Workbook(fileName)
+            worksheet = workbook.add_worksheet()
 
-        import sqlite3
-        conn = sqlite3.connect('poo.db')
-        cursor = conn.cursor()
-        mysel = cursor.execute('SELECT * FROM detale')
-        for i, row in enumerate(mysel):
-            for j, value in enumerate(row):
-                worksheet.write(i, j, value)
-        workbook.close()
+            import sqlite3
+            conn = sqlite3.connect('poo.db')
+            cursor = conn.cursor()
+            mysel = cursor.execute('SELECT * FROM detale')
+            # todo Jeśli rowcont jest -1, wtedy przerwać zapisywanie i
+            #  ostrzeżenie
+            print(mysel.rowcount)
+            for i, row in enumerate(mysel):
+                for j, value in enumerate(row):
+                    worksheet.write(i, j, value)
+            workbook.close()
 
-        stylizacja(fileName)
+            stylizacja(fileName)
 
 
 def stylizacja(plik):
