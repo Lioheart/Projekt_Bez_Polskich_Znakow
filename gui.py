@@ -49,8 +49,6 @@ class Logowanie(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        self.width = 300
-        self.height = 150
         self.setWindowTitle('Logowanie do wykazu narzędzi')
         self.setWindowIcon(QIcon('icons/cow.png'))
         self.resize(self.width, self.height)
@@ -281,12 +279,13 @@ class Wyswietl(QWidget):
 
 
 class About(QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super(About, self).__init__(parent)
         self.setWindowTitle('O mnie...')
 
 
 class Window(QMainWindow):
+
     def __init__(self, user):
         super().__init__()
         self.id_user = user
@@ -303,6 +302,12 @@ class Window(QMainWindow):
         self.initUI()
 
     def initUI(self):
+        normy_lista = (
+            'Normy',
+            'SELECT * FROM detale',
+            'Baza nie zawiera żadnych norm. Plik nie zostanie zapisany.',
+        )
+
         self.setWindowTitle(self.title)
         self.setWindowIcon(QIcon('icons/cow.png'))
         self.resize(self.width, self.height)
@@ -321,10 +326,16 @@ class Window(QMainWindow):
         # Wydruk
         wydr_act1 = QAction('Wydrukuj normy do pliku', self)
         # wydr_act1.setShortcut('Ctrl+Q')
-        wydr_act1.triggered.connect(self.export_norma)
+        wydr_act1.triggered.connect(
+            lambda checked, normyl=normy_lista: self.export(
+                normyl)
+        )
         wydr_act2 = QAction('Wydrukuj wykaz narzędzi do pliku', self)
         # wydr_act2.setShortcut('Ctrl+Q')
-        # wydr_act2.triggered.connect(self.close)
+        # wydr_act2.triggered.connect(
+        #     lambda checked, pozl=None: self.wybor(pozl)
+        # )
+        wydr_act2.triggered.connect(self.wybor)
 
         # Opcje
         opcje_act1 = QAction('Zmiana hasła', self)
@@ -369,41 +380,75 @@ class Window(QMainWindow):
             opcje_uzytkownik(text, id_user)
 
     def about(self):
-        o_mnie = About()
+        o_mnie = About(self)
         o_mnie.show()
 
     # uzytk = Uzytkownik(self)
     # self.setCentralWidget(uzytk)
 
-    def export_norma(self):
+    def wybor(self):
+        poz_lista = [
+            'Wykaz narzędzi ',
+            "SELECT * FROM ",
+            'Baza nie zawiera żadnych pozycji. Plik nie zostanie zapisany.',
+        ]
+
+        lista_poz = []
+        lista_poz.append('Brak')
+        from narzedzia_poz import naglowki
+        for i in naglowki():
+            if "/" in i[0]:
+                lista_poz.append(i[0])
+        inp = QInputDialog(self)
+        inp.setWhatsThis('Wybierz pozycję aby eksportować do pliku')
+        inp.setLabelText('Wybierz pozycję:')
+        inp.setWindowTitle('Pozycje')
+        inp.setComboBoxItems(lista_poz)
+        inp.setCancelButtonText('Anuluj')
+
+        if inp.exec_() == QDialog.Accepted:
+            print(inp.textValue())
+            poz_lista[0] += inp.textValue()
+            poz_lista[1] += "'" + inp.textValue() + "'"
+            if inp.textValue() != 'Brak':
+                self.export(poz_lista)
+            else:
+                QMessageBox.critical(self, 'Wybierz pozycję',
+                                    'Nie wybrano żadnej pozycji!',
+                                    QMessageBox.Ok,
+                                    QMessageBox.Ok)
+    def export(self, lista_arg):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getSaveFileName(
+        file_name, _ = QFileDialog.getSaveFileName(
             self,
             "Zapisywanie jako",
-            "Normy",
+            lista_arg[0].replace('/', '-'),
             "Skoroszyt programu Excel (*.xlsx)",
             options=options
         )
-        if fileName:
-            print(fileName)
-
-            from xlsxwriter import Workbook
-            workbook = Workbook(fileName)
-            worksheet = workbook.add_worksheet()
+        if file_name:
+            print(file_name)
 
             import sqlite3
             conn = sqlite3.connect('poo.db')
             cursor = conn.cursor()
-            mysel = cursor.execute('SELECT * FROM detale')
-            # todo Jeśli rowcont jest -1, wtedy przerwać zapisywanie i
-            #  ostrzeżenie
-            print(mysel.rowcount)
-            for i, row in enumerate(mysel):
-                for j, value in enumerate(row):
-                    worksheet.write(i, j, value)
-            workbook.close()
+            mysel = cursor.execute(lista_arg[1])
+            if mysel.fetchall():
+                QMessageBox.warning(self, 'Pusta zawartość',
+                                    lista_arg[2],
+                                    QMessageBox.Ok,
+                                    QMessageBox.Ok)
+            else:
+                from xlsxwriter import Workbook
+                workbook = Workbook(file_name)
+                worksheet = workbook.add_worksheet()
+                for i, row in enumerate(mysel):
+                    for j, value in enumerate(row):
+                        worksheet.write(i, j, value)
+                workbook.close()
 
-            stylizacja(fileName)
+                if 'Normy' in lista_arg:
+                    stylizacja(file_name)
 
 
 def stylizacja(plik):

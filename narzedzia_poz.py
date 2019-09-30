@@ -10,6 +10,12 @@ from PyQt5.QtWidgets import QWidget, QGroupBox, QPushButton, \
 from baza import multipolaczenie, polaczenie
 
 
+def naglowki():
+    query = "SELECT name FROM sqlite_master WHERE type ='table' AND name " \
+            "NOT LIKE 'sqlite_%'; "
+    return multipolaczenie(query)
+
+
 class NarzPoz(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
@@ -119,7 +125,7 @@ class NarzPoz(QWidget):
     def naglowki_kolumn(self):
         # Nagłówki kolumn
         self.listaPozycji.append('Brak')
-        for i in self.naglowki():
+        for i in naglowki():
             if "/" in i[0]:
                 self.listaPozycji.append(i[0])
 
@@ -277,11 +283,6 @@ class NarzPoz(QWidget):
         for i in range(ilosc_kolumn):
             nazwa_kolumn = self.model.headerData(i, Qt.Horizontal)
             self.model.setHeaderData(i, Qt.Horizontal, naglowki[nazwa_kolumn])
-
-    def naglowki(self):
-        query = "SELECT name FROM sqlite_master WHERE type ='table' AND name " \
-                "NOT LIKE 'sqlite_%'; "
-        return multipolaczenie(query)
 
     @pyqtSlot(str)
     def wyszukiwanie(self, text):
