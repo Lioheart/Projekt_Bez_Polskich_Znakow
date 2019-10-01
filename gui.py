@@ -318,7 +318,7 @@ class Window(QMainWindow):
         # todo zaproponowanie skrótów
         wysw_act1 = QAction('Wyświetl normy pozycji', self)
         # wysw_act1.setShortcut('Ctrl+Q')
-        wysw_act1.triggered.connect(self.widget.norma)
+        wysw_act1.triggered.connect(self.norma)
         wysw_act2 = QAction('Wyświetl narzędzia pozycji', self)
         # wysw_act2.setShortcut('Ctrl+Q')
         wysw_act2.triggered.connect(self.wyswietl)
@@ -361,6 +361,11 @@ class Window(QMainWindow):
         opcje.addAction(opcje_act3)
 
         self.show()
+
+    def norma(self):
+        from norma import Norma
+        nor = Norma(self)
+        self.setCentralWidget(nor)
 
     def wyswietl(self):
         wysw = Wyswietl(self)
@@ -414,9 +419,10 @@ class Window(QMainWindow):
                 self.export(poz_lista)
             else:
                 QMessageBox.critical(self, 'Wybierz pozycję',
-                                    'Nie wybrano żadnej pozycji!',
-                                    QMessageBox.Ok,
-                                    QMessageBox.Ok)
+                                     'Nie wybrano żadnej pozycji!',
+                                     QMessageBox.Ok,
+                                     QMessageBox.Ok)
+
     def export(self, lista_arg):
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getSaveFileName(
@@ -433,7 +439,8 @@ class Window(QMainWindow):
             conn = sqlite3.connect('poo.db')
             cursor = conn.cursor()
             mysel = cursor.execute(lista_arg[1])
-            if mysel.fetchall():
+            dane = mysel.fetchall()
+            if not dane:
                 QMessageBox.warning(self, 'Pusta zawartość',
                                     lista_arg[2],
                                     QMessageBox.Ok,
@@ -442,13 +449,170 @@ class Window(QMainWindow):
                 from xlsxwriter import Workbook
                 workbook = Workbook(file_name)
                 worksheet = workbook.add_worksheet()
-                for i, row in enumerate(mysel):
+                for i, row in enumerate(dane):
                     for j, value in enumerate(row):
+                        if j == 0:
+                            continue
                         worksheet.write(i, j, value)
                 workbook.close()
 
                 if 'Normy' in lista_arg:
                     stylizacja(file_name)
+                else:
+                    styl_pozycje(file_name, lista_arg[0][-7:])
+
+
+def styl_pozycje(plik, nazwa='999/999'):
+    from openpyxl import load_workbook
+    from openpyxl.utils import get_column_letter
+    from openpyxl.styles import Font
+    from openpyxl.styles import Border
+    from openpyxl.styles import Side
+    from openpyxl.styles import Alignment
+    nazwa_font = 'FL Pismo Techniczne'
+    szer = 0.71
+    szer_lista = [
+        7,
+        22.57,
+        7.43,
+        28.43,
+        9.43,
+        11,
+        11,
+        11
+    ]
+    merge_list = [
+        'A1:C1',
+        'D1:H1',
+        'A2:C2',
+        'D2:H2',
+        'A3:C3',
+        'D3:H3',
+        'A4:A5',
+        'B4:B5',
+        'C4:D5',
+        'E4:E5',
+        'F4:F5',
+        'G4:G5',
+        'H4:H5',
+        'A32:C32',
+        'A33:C33',
+        'A34:C34',
+        'D32:E32',
+        'D33:E33',
+        'D34:E34',
+        'F32:H32',
+        'F33:H33',
+        'F34:H34'
+    ]
+    for i in range(26):
+        tekst = 'C' + str(i + 6) + ':D' + str(i + 6)
+        merge_list.append(tekst)
+    wys_lista = [
+        65,
+        12.75,
+        23.25,
+        12.75,
+        12.75,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        25.5,
+        12.75,
+        12.75,
+        12.75,
+        12.75,
+        12.75
+    ]
+    font_lista = [
+        Font(size=18, bold=True, name=nazwa_font),
+        Font(size=10, name=nazwa_font),
+        Font(size=10, bold=True, name=nazwa_font)
+    ]
+
+    aligment = Alignment(horizontal='center', vertical='center',
+                         wrap_text=True)
+    teks_slownik = {
+        'SPIS POMOCY WARSZTATOWYCH': [1, 4, font_lista[0]],
+        'Skrócony kod detalu': [2, 1, font_lista[1]],
+        'Nazwa detalu': [2, 4, font_lista[1]],
+        nazwa: [3, 1, font_lista[0]],
+        'Nr operacji': [4, 1, font_lista[2]],
+        'Oprawki / Noże tokarskie': [4, 2, font_lista[2]],
+        'Narzędzie': [4, 3, font_lista[2]],
+        'Prędkość Vc': [4, 5, font_lista[2]],
+        'Obroty n': [4, 6, font_lista[2]],
+        'Posuw na ząb fz': [4, 7, font_lista[2]],
+        'Posuw f': [4, 8, font_lista[2]],
+        'Opracował, data, podpis': [32, 1, font_lista[1]],
+        'Sprawdził, data, podpis': [32, 4, font_lista[1]],
+        'Zatwierdził, data, podpis': [32, 6, font_lista[1]]
+    }
+
+    work = load_workbook(plik)
+    ws = work[work.sheetnames[0]]
+    for i in range(5):
+        ws.insert_rows(0)
+    ws.insert_cols(0)
+    ws.insert_cols(4)
+    for i, wys in enumerate(wys_lista):
+        ws.row_dimensions[i + 1].height = wys
+    for i, col in enumerate(szer_lista):
+        ws.column_dimensions[get_column_letter(i + 1)].width = col + szer
+    for val in merge_list:
+        ws.merge_cells(val)
+
+    czcionka = Font(name=nazwa_font)
+    thin = Side(border_style="thin", color="000000")
+    for i in range(8):
+        for j in range(34):
+            ws.cell(row=j + 1, column=i + 1).font = czcionka
+            ws.cell(row=j + 1, column=i + 1).alignment = aligment
+            if j >= 32:
+                continue
+            ws.cell(row=j + 1, column=i + 1).border = Border(
+                thin, thin, thin, thin)
+
+    for key, value in teks_slownik.items():
+        ws.cell(value[0], value[1]).value = key
+        ws.cell(value[0], value[1]).font = value[2]
+        ws.cell(value[0], value[1]).alignment = aligment
+
+    ws.oddFooter.left.text = 'P-13.01.00.08'
+    ws.oddFooter.left.size = 12
+    ws.oddFooter.left.font = nazwa_font
+    ws.print_options.horizontalCentered = True
+    ws.print_options.verticalCentered = True
+    ws.page_setup.orientation = ws.ORIENTATION_PORTRAIT
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.page_setup.fitToWidth = True
+    ws.page_setup.print_area = 'A1:H36'
+    work.save(plik)
+    work.close()
+    print('Wykonano')
 
 
 def stylizacja(plik):

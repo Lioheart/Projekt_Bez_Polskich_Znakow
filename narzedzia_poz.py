@@ -187,9 +187,9 @@ class NarzPoz(QWidget):
             'id_poz': 'ID',
             'symbol_narz': 'Symbol narzędzia',
             'vc': 'Prędkość skrawania Vc [m/min]',
-            'obroty': 'Obroty [obr/min]',
-            'fz': 'Posuw na ząb [mm/ostrze]',
-            'posuw': 'Posuw liniowy [mm/min]'
+            'obroty': 'Obroty n [obr/min]',
+            'fz': 'Posuw na ząb fz [mm/ostrze]',
+            'posuw': 'Posuw liniowy f [mm/min]'
         }
         self.model_poz.setTable(tekst)
         self.model_poz.setEditStrategy(QSqlTableModel.OnFieldChange)
