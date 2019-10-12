@@ -19,6 +19,7 @@ def naglowki():
 class NarzPoz(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
+        self.pozycja = 'Brak'
         self.proxy = QSortFilterProxyModel(self)
         self.proxy_poz = QSortFilterProxyModel(self)
         self.edit_wysz = QLineEdit(self)
@@ -115,12 +116,28 @@ class NarzPoz(QWidget):
         dodaj_btn.clicked.connect(self.dodaj_poz)
         ok_button.clicked.connect(self.klikniecie)
         usun_btn.clicked.connect(self.usun_pozycje)
+        wydrukuj_btn.clicked.connect(self.wydrukuj)
         self.edit_wysz.textChanged.connect(self.wyszukiwanie)
         self.combo_typ.activated[str].connect(self.onActiveNarz)
         self.combo_poz.activated[str].connect(self.onActivePoz)
         # Menu kontekstowe własne
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self.prawoklik)
+
+    def wydrukuj(self):
+        poz_lista = [
+            'Wykaz narzędzi ' + self.pozycja,
+            "SELECT * FROM '" + self.pozycja + "'",
+            'Baza nie zawiera żadnych pozycji. Plik nie zostanie zapisany.',
+        ]
+        from gui import Window
+        if self.pozycja != 'Brak':
+            Window.export(self, poz_lista)
+        else:
+            QMessageBox.critical(self, 'Wybierz pozycję',
+                                 'Nie wybrano żadnej pozycji!',
+                                 QMessageBox.Ok,
+                                 QMessageBox.Ok)
 
     def naglowki_kolumn(self):
         # Nagłówki kolumn
@@ -183,6 +200,7 @@ class NarzPoz(QWidget):
             print("Nie wpisano pozycji")
 
     def onActivePoz(self, tekst):
+        self.pozycja = tekst
         naglowki = {
             'id_poz': 'ID',
             'symbol_narz': 'Symbol narzędzia',

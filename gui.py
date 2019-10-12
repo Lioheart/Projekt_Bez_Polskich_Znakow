@@ -33,8 +33,10 @@ class Logowanie(QDialog):
 
         # Edycja podwietlenia
         paleta = self.palette()
-        paleta.setColor(QPalette.Highlight, QColor(189, 67, 243))
+        paleta.setColor(QPalette.Highlight, QColor(233, 107, 57))
         self.setPalette(paleta)
+        # Usuwa ramkę
+        # self.setWindowFlags(Qt.FramelessWindowHint)
 
         # Dane okna formularza
         self.haslo = QLineEdit()
@@ -45,13 +47,12 @@ class Logowanie(QDialog):
         self.setWhatsThis('Pole logowania')
         self.width = 300
         self.height = 150
-
         self.init_ui()
 
     def init_ui(self):
         self.setWindowTitle('Logowanie do wykazu narzędzi')
         self.setWindowIcon(QIcon('icons/cow.png'))
-        self.resize(self.width, self.height)
+        self.setFixedSize(self.width, self.height)
 
         ok_button = QPushButton("OK")
         cancel_button = QPushButton("Anuluj")
@@ -278,12 +279,6 @@ class Wyswietl(QWidget):
         self.parent.setCentralWidget(menu_gl)
 
 
-class About(QMainWindow):
-    def __init__(self, parent=None):
-        super(About, self).__init__(parent)
-        self.setWindowTitle('O mnie...')
-
-
 class Window(QMainWindow):
 
     def __init__(self, user):
@@ -296,7 +291,7 @@ class Window(QMainWindow):
 
         # Edycja podwietlenia głównego okna
         paleta = self.palette()
-        paleta.setColor(QPalette.Highlight, QColor(189, 67, 243))
+        paleta.setColor(QPalette.Highlight, QColor(233, 107, 57))
         self.setPalette(paleta)
 
         self.initUI()
@@ -385,8 +380,11 @@ class Window(QMainWindow):
             opcje_uzytkownik(text, id_user)
 
     def about(self):
-        o_mnie = About(self)
-        o_mnie.show()
+        self.window = QMainWindow()
+        from o_mnie import Ui_O_mnie
+        self.ui = Ui_O_mnie()
+        self.ui.setupUi(self.window)
+        self.window.show()
 
     # uzytk = Uzytkownik(self)
     # self.setCentralWidget(uzytk)
@@ -469,6 +467,9 @@ def styl_pozycje(plik, nazwa='999/999'):
     from openpyxl.styles import Border
     from openpyxl.styles import Side
     from openpyxl.styles import Alignment
+    from openpyxl.styles import PatternFill
+    import openpyxl
+    from openpyxl.drawing.image import Image
     nazwa_font = 'FL Pismo Techniczne'
     szer = 0.71
     szer_lista = [
@@ -495,25 +496,26 @@ def styl_pozycje(plik, nazwa='999/999'):
         'F4:F5',
         'G4:G5',
         'H4:H5',
-        'A32:C32',
         'A33:C33',
         'A34:C34',
-        'D32:E32',
+        'A35:C35',
         'D33:E33',
         'D34:E34',
-        'F32:H32',
+        'D35:E35',
         'F33:H33',
-        'F34:H34'
+        'F34:H34',
+        'F35:H35'
     ]
-    for i in range(26):
+    for i in range(27):
         tekst = 'C' + str(i + 6) + ':D' + str(i + 6)
         merge_list.append(tekst)
     wys_lista = [
-        65,
+        62,
         12.75,
         23.25,
         12.75,
         12.75,
+        25.5,
         25.5,
         25.5,
         25.5,
@@ -566,9 +568,9 @@ def styl_pozycje(plik, nazwa='999/999'):
         'Obroty n': [4, 6, font_lista[2]],
         'Posuw na ząb fz': [4, 7, font_lista[2]],
         'Posuw f': [4, 8, font_lista[2]],
-        'Opracował, data, podpis': [32, 1, font_lista[1]],
-        'Sprawdził, data, podpis': [32, 4, font_lista[1]],
-        'Zatwierdził, data, podpis': [32, 6, font_lista[1]]
+        'Opracował, data, podpis': [33, 1, font_lista[1]],
+        'Sprawdził, data, podpis': [33, 4, font_lista[1]],
+        'Zatwierdził, data, podpis': [33, 6, font_lista[1]]
     }
 
     work = load_workbook(plik)
@@ -587,10 +589,10 @@ def styl_pozycje(plik, nazwa='999/999'):
     czcionka = Font(name=nazwa_font)
     thin = Side(border_style="thin", color="000000")
     for i in range(8):
-        for j in range(34):
+        for j in range(35):
             ws.cell(row=j + 1, column=i + 1).font = czcionka
             ws.cell(row=j + 1, column=i + 1).alignment = aligment
-            if j >= 32:
+            if j >= 33:
                 continue
             ws.cell(row=j + 1, column=i + 1).border = Border(
                 thin, thin, thin, thin)
@@ -599,6 +601,19 @@ def styl_pozycje(plik, nazwa='999/999'):
         ws.cell(value[0], value[1]).value = key
         ws.cell(value[0], value[1]).font = value[2]
         ws.cell(value[0], value[1]).alignment = aligment
+
+    wypelnienie = PatternFill(start_color='EEECE1', end_color='EEECE1',
+                              fill_type='solid')
+    for i in range(8):
+        for j in range(26):
+            if not (j % 2 == 0):
+                ws.cell(row=j + 6, column=i + 1).fill = wypelnienie
+
+    img = openpyxl.drawing.image.Image('logo.png')
+    # 100 = 2,65cm
+    img.height = 80.75471698
+    img.width = 269.43396226
+    ws.add_image(img, 'A1')
 
     ws.oddFooter.left.text = 'P-13.01.00.08'
     ws.oddFooter.left.size = 12
@@ -609,7 +624,14 @@ def styl_pozycje(plik, nazwa='999/999'):
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
     ws.sheet_properties.pageSetUpPr.fitToPage = True
     ws.page_setup.fitToWidth = True
-    ws.page_setup.print_area = 'A1:H36'
+    # 1cm = 0.4
+    ws.page_margins.left = 0.24
+    ws.page_margins.right = 0.24
+    ws.page_margins.top = 0.76
+    ws.page_margins.bottom = 0.76
+    ws.page_margins.header = 0.32
+    ws.page_margins.footer = 0.32
+    ws.page_setup.print_area = 'A1:H37'
     work.save(plik)
     work.close()
     print('Wykonano')

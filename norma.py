@@ -238,6 +238,7 @@ class Norma(QWidget):
         # Za zmianę w bazie odpowiada OnFieldChange
         self.model.setEditStrategy(QSqlTableModel.OnFieldChange)
 
+
         # Ustawianie nagłówków
         ilosc_kolumn = self.model.columnCount()
         for i in range(ilosc_kolumn):
@@ -246,6 +247,18 @@ class Norma(QWidget):
                                      self.naglowki[nazwa_kolumn])
         self.model.select()
 
+        # Odpowiada za edycję pojednynczym kliknieciem
+        '''
+        Constant    Value   Description
+        QAbstractItemView::NoEditTriggers   0   No editing possible.
+        QAbstractItemView::CurrentChanged   1   Editing start whenever current item changes.
+        QAbstractItemView::DoubleClicked    2   Editing starts when an item is double clicked.
+        QAbstractItemView::SelectedClicked  4   Editing starts when clicking on an already selected item.
+        QAbstractItemView::EditKeyPressed   8   Editing starts when the platform edit key has been pressed over an item.
+        QAbstractItemView::AnyKeyPressed    16  Editing starts when any key is pressed over an item.
+        QAbstractItemView::AllEditTriggers  31  Editing starts for all above actions.
+        '''
+        self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.verticalHeader().setVisible(False)
         self.table.setSortingEnabled(True)
