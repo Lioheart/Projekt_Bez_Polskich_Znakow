@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 # LOGOWANIE
+import os
 import sys
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSortFilterProxyModel, Qt, pyqtSlot, QRegExp
-from PyQt5.QtGui import QIcon, QPalette, QColor
+from PyQt5.QtGui import QIcon, QPalette, QColor, QCursor
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
     QHBoxLayout, QVBoxLayout, QLineEdit, QGroupBox, QDialog, QFormLayout, \
     QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog, \
-    QWidget, QComboBox, QTableView, QAbstractItemView
+    QWidget, QComboBox, QTableView, QAbstractItemView, QMenu
 
 from baza import polaczenie
 from opcje_qt import Wewnatrz
@@ -72,6 +73,15 @@ class Logowanie(QDialog):
         # self.login.setText('admin')
         # self.haslo.setText('admin')
 
+        login = str(self.login.text())
+        self.plik = os.path.isfile(os.environ['LOCALAPPDATA'] + '\\pbpz.cfg')
+        if self.plik:
+            file = open(os.environ['LOCALAPPDATA'] + '\\pbpz.cfg', 'r+', -1,
+                        'utf-8')
+            self.login.setText(file.read())
+            file.write(login)
+            file.close()
+
         center(self)
 
         # connecty
@@ -84,11 +94,12 @@ class Logowanie(QDialog):
         self.setLayout(main_layout)
 
         self.show()
+        self.haslo.setFocus()
 
     def logowanie(self):
-        query = "SELECT iduzytkownicy FROM uzytkownicy WHERE nazwa_uz = '" + str(
-            self.login.text()) + "' AND haslo_uz = '" + str(
-            self.haslo.text()) + "';"
+        login = str(self.login.text())
+        query = "SELECT iduzytkownicy FROM uzytkownicy WHERE nazwa_uz = '" + \
+                login + "' AND haslo_uz = '" + str(self.haslo.text()) + "';"
         global id_user
         id_user = polaczenie(query)
         if id_user:
@@ -101,6 +112,11 @@ class Logowanie(QDialog):
                                                             " \nSpróbuj "
                                                             "ponownie",
                                     QMessageBox.Ok, QMessageBox.Ok)
+        if not self.plik:
+            file = open(os.environ['LOCALAPPDATA'] + '\\pbpz.cfg', 'x', -1,
+                        'utf-8')
+            file.write(login)
+            file.close()
 
 
 class Wyswietl(QWidget):
@@ -170,6 +186,28 @@ class Wyswietl(QWidget):
         cancel_button.clicked.connect(self.anulowanie)
         self.edit_wysz.textChanged.connect(self.wyszukiwanie)
         self.combo_typ.activated[str].connect(self.onActiveNarz)
+        # Menu kontekstowe własne
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.prawoklik)
+
+    def prawoklik(self):
+        menu = QMenu(self)
+        if self.model.rowCount():
+            akcja = QAction('Usuń narzędzie', self)
+            akcja.triggered.connect(self.usun_wiersz)
+            menu.addAction(akcja)
+            menu.exec_(QCursor.pos())
+
+    def usun_wiersz(self):
+        ok = QMessageBox.question(self, 'Potwierdzenie',
+                                  'Czy na pewno chcesz usunąć narzędzie?',
+                                  QMessageBox.Ok, QMessageBox.Cancel)
+        if ok == QMessageBox.Ok:
+            selected = self.table.currentIndex()
+            self.model.removeRow(selected.row())
+            self.model.submitAll()
+            self.model.select()
+            self.parent.statusBar().showMessage("Usunięto narzędzie", 10000)
 
     def onActiveNarz(self, tekst):
         slownik = {
@@ -322,7 +360,7 @@ class Window(QMainWindow):
         wydr_act1 = QAction('Wydrukuj normy do pliku', self)
         # wydr_act1.setShortcut('Ctrl+Q')
         wydr_act1.triggered.connect(
-            lambda checked, normyl=normy_lista: self.export(
+            lambda checked, normyl=normy_lista: self.wybor_norma(
                 normyl)
         )
         wydr_act2 = QAction('Wydrukuj wykaz narzędzi do pliku', self)
@@ -371,6 +409,7 @@ class Window(QMainWindow):
                                         'Wprowadź nowego użytkownika:')
         if ok and text:
             dodaj_uzytkownik(text)
+        self.statusBar().showMessage("Dodano nowego użytkownika", 10000)
 
     def uzytkownik(self):
         text, ok = QInputDialog.getText(self, 'Zmiana hasła',
@@ -378,6 +417,7 @@ class Window(QMainWindow):
                                         QLineEdit.Password)
         if ok and text:
             opcje_uzytkownik(text, id_user)
+            self.statusBar().showMessage("Zmieniono hasło", 10000)
 
     def about(self):
         self.window = QMainWindow()
@@ -415,18 +455,36 @@ class Window(QMainWindow):
             poz_lista[1] += "'" + inp.textValue() + "'"
             if inp.textValue() != 'Brak':
                 self.export(poz_lista)
+                self.statusBar().showMessage(
+                    "Wyeksportowano do pliku", 10000)
             else:
                 QMessageBox.critical(self, 'Wybierz pozycję',
                                      'Nie wybrano żadnej pozycji!',
                                      QMessageBox.Ok,
                                      QMessageBox.Ok)
 
+    def wybor_norma(self, lista):
+        item, ok = QInputDialog.getItem(self, 'Wybierz', 'Typ:',
+                                        ['Odkuwki', 'Kołnierze'], 0, False)
+        if ok and item:
+            if item == 'Kołnierze':
+                lista = list(lista)
+                lista[1] = 'SELECT * FROM kolnierze'
+                lista = tuple(lista)
+        else:
+            return
+
+        self.export(lista)
+        self.statusBar().showMessage(
+            "Wyeksportowano do pliku", 10000)
+
     def export(self, lista_arg):
         options = QFileDialog.Options()
         file_name, _ = QFileDialog.getSaveFileName(
             self,
             "Zapisywanie jako",
-            lista_arg[0].replace('/', '-'),
+            os.path.expanduser("~") + '/desktop/' + lista_arg[0].replace('/',
+                                                                         '-'),
             "Skoroszyt programu Excel (*.xlsx)",
             options=options
         )

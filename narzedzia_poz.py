@@ -133,6 +133,8 @@ class NarzPoz(QWidget):
         from gui import Window
         if self.pozycja != 'Brak':
             Window.export(self, poz_lista)
+            self.parent.statusBar().showMessage(
+                "Wyeksportowano do pliku", 10000)
         else:
             QMessageBox.critical(self, 'Wybierz pozycję',
                                  'Nie wybrano żadnej pozycji!',
@@ -147,10 +149,9 @@ class NarzPoz(QWidget):
                 self.listaPozycji.append(i[0])
 
     def usun_pozycje(self):
-
         text, ok = QInputDialog.getItem(self, 'Usuń pozycje',
                                         'Wybierz pozycję do usunięcia',
-                                        self.listaPozycji[1:])
+                                        self.listaPozycji[1:], editable=False)
         if ok:
             if text != 'Brak':
                 print(text)
@@ -160,6 +161,8 @@ class NarzPoz(QWidget):
                 self.naglowki_kolumn()
                 indeks = self.combo_poz.findText(text)
                 self.combo_poz.removeItem(indeks)
+                self.parent.statusBar().showMessage(
+                    "Usunięto pozycję", 10000)
             else:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
@@ -181,11 +184,13 @@ class NarzPoz(QWidget):
         self.model_poz.removeRow(selected.row())
         self.model_poz.submitAll()
         self.model_poz.select()
+        self.parent.statusBar().showMessage(
+            "Usunięto narzędzie", 10000)
 
     def dodaj_poz(self):
         text, ok = QInputDialog.getText(self, 'Wprowadź pozycje', 'Pozycja:')
         if ok and text:
-            query = 'CREATE TABLE "' + text + '" ("id_poz" INTEGER PRIMARY ' \
+            query = 'CREATE TABLE IF NOT EXISTS "' + text + '" ("id_poz" INTEGER PRIMARY ' \
                                               'KEY AUTOINCREMENT, ' \
                                               '"symbol_narz"	TEXT, ' \
                                               '"vc" INTEGER,	"obroty" ' \
@@ -196,6 +201,8 @@ class NarzPoz(QWidget):
             self.listaPozycji.clear()
             self.combo_poz.addItem(text)
             self.naglowki_kolumn()
+            self.parent.statusBar().showMessage(
+                "Dodano pozycję " + text, 10000)
         else:
             print("Nie wpisano pozycji")
 
@@ -342,6 +349,9 @@ class NarzPoz(QWidget):
             polaczenie(query)
             # Odświeża tabelę
             self.model_poz.select()
+            self.parent.statusBar().showMessage(
+                "Dodano narzędzie " + nazwa + " do pozycji " + self.model_poz.tableName(),
+                10000)
         else:
             print(self.model_poz.tableName())
             print("Brak wybranego narzędzia")
