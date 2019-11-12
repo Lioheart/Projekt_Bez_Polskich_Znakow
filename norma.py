@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, \
     QShortcut, QComboBox, QItemDelegate, QAbstractItemView, \
     QMenu, QAction, QMessageBox, QDialog, QGridLayout, QTabWidget
 
-from baza import multipolaczenie, update_bazy, polaczenie
+from baza import multipolaczenie, update_bazy, polaczenie, sciezka
 
 
 class ComboDelegate(QItemDelegate):
@@ -196,7 +196,7 @@ class NormaOdk(QWidget):
         self.table = QTableView(self)
         self.btn_odswiez = QPushButton("Odśwież bazę")
         self.db = QSqlDatabase.addDatabase('QSQLITE')
-        self.db.setDatabaseName('poo.db')
+        self.db.setDatabaseName(sciezka)
         if self.db.open():
             print('Otworzono bazę danych')
         self.model = QSqlRelationalTableModel(self, self.db)
@@ -382,7 +382,10 @@ class NormaOdk(QWidget):
         QAbstractItemView::AnyKeyPressed    16  Editing starts when any key is pressed over an item.
         QAbstractItemView::AllEditTriggers  31  Editing starts for all above actions.
         '''
-        self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        if self.odczyt():
+            self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        else:
+            self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.verticalHeader().setVisible(False)
         self.table.setSortingEnabled(True)
@@ -398,6 +401,11 @@ class NormaOdk(QWidget):
         from opcje_qt import Wewnatrz
         menu_gl = Wewnatrz(self.parent)
         self.parent.setCentralWidget(menu_gl)
+
+    def odczyt(self):
+        id = str(self.parent.id_user[0])
+        query = 'SELECT odczyt FROM uzytkownicy WHERE iduzytkownicy=' + id
+        return polaczenie(query)[0]
 
     def dodaj(self):
         poz, masz, op, tm, tp, ok = MultiDialog().getMultidialog(self)
@@ -476,7 +484,10 @@ class NormaKol(NormaOdk):
         self.model.select()
 
         # Odpowiada za edycję pojednynczym kliknieciem
-        self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        if self.odczyt():
+            self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        else:
+            self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.verticalHeader().setVisible(False)
         self.table.setSortingEnabled(True)

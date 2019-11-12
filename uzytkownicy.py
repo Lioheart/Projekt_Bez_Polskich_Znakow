@@ -13,15 +13,8 @@ def dodaj_uzytkownik(uzytkownik):
     query = 'INSERT INTO "main"."uzytkownicy"(nazwa_uz,haslo_uz) VALUES ("' + uzytkownik + '","' + uzytkownik + '");'
     polaczenie(query)
 
-# class Uzytkownik(QWidget):
-#     def __init__(self, parent):
-#         super(QWidget, self).__init__(parent)
-#         self.parent = parent
-#         self.formularz = QGroupBox("Opcje konta")
-#         self.initUI()
-#
-#     def initUI(self):
-#         grid = QGridLayout()
-#         grid.setSpacing(15)
-#         grid.addWidget(self.formularz)
-#         self.setLayout(grid)
+
+def zmiana_uzytkownik(uzytkownik, id_user):
+    query = 'UPDATE uzytkownicy SET nazwa_uz = "' + uzytkownik + '" WHERE iduzytkownicy = ' + \
+            id_user[0] + ';'
+    polaczenie(query)

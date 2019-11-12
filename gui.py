@@ -12,9 +12,9 @@ from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
     QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog, \
     QWidget, QComboBox, QTableView, QAbstractItemView, QMenu
 
-from baza import polaczenie
-from opcje_qt import Wewnatrz
-from uzytkownicy import opcje_uzytkownik, dodaj_uzytkownik
+from baza import polaczenie, multipolaczenie, sciezka
+from opcje_qt import Wewnatrz, wysylanie
+from uzytkownicy import opcje_uzytkownik, dodaj_uzytkownik, zmiana_uzytkownik
 
 id_user = 0
 
@@ -130,7 +130,7 @@ class Wyswietl(QWidget):
         self.lbl_typ = QLabel("Wybierz typ narzędzia:")
         self.table = QTableView(self)
         db = QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('poo.db')
+        db.setDatabaseName(sciezka)
         if db.open():
             print('Otworzono bazę danych')
         self.model = QSqlTableModel(self, db)
@@ -318,7 +318,6 @@ class Wyswietl(QWidget):
 
 
 class Window(QMainWindow):
-
     def __init__(self, user):
         super().__init__()
         self.id_user = user
@@ -379,6 +378,14 @@ class Window(QMainWindow):
         opcje_act3 = QAction('Informacje o autorze', self)
         # opcje_act2.setShortcut('Ctrl+Q')
         opcje_act3.triggered.connect(self.about)
+        opcje_act4 = QAction('Usuń konto', self)
+        opcje_act4.triggered.connect(self.usun_konto)
+        opcje_act5 = QAction('Lista użytkowników', self)
+        opcje_act5.triggered.connect(self.lista_uz)
+        opcje_act6 = QAction('Zmiana nazwy użytkownika', self)
+        opcje_act6.triggered.connect(self.zm_loginu)
+        opcje_act7 = QAction('Zgłoś problem', self)
+        opcje_act7.triggered.connect(self.problem)
 
         menubar = self.menuBar()
         wyswietlanie = menubar.addMenu('Wyświetl')
@@ -389,11 +396,25 @@ class Window(QMainWindow):
         wydrukowanie.addAction(wydr_act1)
         wydrukowanie.addAction(wydr_act2)
         opcje.addAction(opcje_act1)
+        opcje.addAction(opcje_act6)
+        opcje.addAction(opcje_act4)
         if id_user[0] == 1:
+            opcje.addSeparator()
             opcje.addAction(opcje_act2)
+            opcje.addAction(opcje_act5)
+        opcje.addSeparator()
+        opcje.addAction(opcje_act7)
         opcje.addAction(opcje_act3)
 
         self.show()
+
+    def problem(self):
+        tekst, ok = QInputDialog.getMultiLineText(
+            self,
+            'Zgłoś problem',
+            'Wpisz poniżej rodzaj problemu')
+        if ok and tekst:
+            wysylanie(tekst)
 
     def norma(self):
         from norma import Norma
@@ -411,6 +432,13 @@ class Window(QMainWindow):
             dodaj_uzytkownik(text)
         self.statusBar().showMessage("Dodano nowego użytkownika", 10000)
 
+    def zm_loginu(self):
+        text, ok = QInputDialog.getText(self, 'Zmiana nazwy użytkownika',
+                                        'Wprowadź nową nazwę użytkownika:')
+        if ok and text:
+            zmiana_uzytkownik(text, id_user)
+        self.statusBar().showMessage("Zmieniono nazwę użytkownika", 10000)
+
     def uzytkownik(self):
         text, ok = QInputDialog.getText(self, 'Zmiana hasła',
                                         'Wprowadź nowe hasło:',
@@ -418,6 +446,43 @@ class Window(QMainWindow):
         if ok and text:
             opcje_uzytkownik(text, id_user)
             self.statusBar().showMessage("Zmieniono hasło", 10000)
+
+    def lista_uz(self):
+        from lista_uz import Ui_Form
+        from widget import Ui_H_Form
+        query = 'SELECT "nazwa_uz" FROM "uzytkownicy" ORDER BY "iduzytkownicy" ASC;'
+        loginy = multipolaczenie(query)
+
+        self.Form = QtWidgets.QWidget()
+        self.Form.setWindowIcon(QIcon('icons/cow.png'))
+        self.Form.setWindowTitle('Lista użytkowników')
+        self.ui = Ui_Form()
+        self.ui.setupUi(self.Form)
+        self.Form.show()
+
+        # Lista składana klas dla każdego użytkownika
+        self.ui2 = [Ui_H_Form() for i in loginy]
+
+        # Przypisanie każdego użytkownika do widoku
+        for i, login in enumerate(loginy):
+            self.H_Form = QtWidgets.QWidget()
+            self.ui2[i].setupUi(self.H_Form)
+            self.ui2[i].label.setText(login[0])
+            self.ui.verticalLayout_2.addWidget(self.H_Form)
+
+    def usun_konto(self):
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Warning)
+        msg.setText('Czy na pewno chcesz usunąć swoje konto?')
+        msg.setWindowTitle('Usuwanie konta')
+        msg.addButton('Tak', QMessageBox.YesRole)
+        msg.addButton('Nie', QMessageBox.NoRole)
+        msg = msg.exec_()
+        if not msg and id_user[0] != 1:
+            query = 'DELETE FROM "uzytkownicy" WHERE "iduzytkownicy" IS ("' + str(
+                id_user[0]) + '");'
+            polaczenie(query)
+            self.statusBar().showMessage("Usunięto użytkownika", 10000)
 
     def about(self):
         self.window = QMainWindow()
@@ -492,7 +557,7 @@ class Window(QMainWindow):
             print(file_name)
 
             import sqlite3
-            conn = sqlite3.connect('poo.db')
+            conn = sqlite3.connect(sciezka)
             cursor = conn.cursor()
             mysel = cursor.execute(lista_arg[1])
             dane = mysel.fetchall()
@@ -667,6 +732,7 @@ def styl_pozycje(plik, nazwa='999/999'):
             if not (j % 2 == 0):
                 ws.cell(row=j + 6, column=i + 1).fill = wypelnienie
 
+    # Wymaga Pillow
     img = openpyxl.drawing.image.Image('logo.png')
     # 100 = 2,65cm
     img.height = 80.75471698

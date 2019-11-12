@@ -242,6 +242,9 @@ class Ui_O_mnie(object):
     def retranslateUi(self, O_mnie):
         from platform import python_version
         from PyQt5.Qt import PYQT_VERSION_STR
+        from setuptools_scm import get_version
+        version = get_version(root='.', relative_to=__file__)
+        version = '.'.join(version.split('.')[:3])
         _translate = QtCore.QCoreApplication.translate
         O_mnie.setWindowTitle(_translate("O_mnie", "O mnie..."))
         url_link = '<a href=\'https://github.com/Lioheart' \
@@ -251,8 +254,8 @@ class Ui_O_mnie(object):
         self.qt_2.setText(_translate("O_mnie", PYQT_VERSION_STR))
         self.wersja_opr_2.setText(_translate("O_mnie", "Wersja oprogramowania:"))
         self.wersja_qt_2.setText(_translate("O_mnie", "Wersja QT:"))
-        self.wykaz_narz.setText(_translate("O_mnie", "Wykaz Narzędzi"))
-        self.opr_2.setText(_translate("O_mnie", "0.1.0"))
+        self.wykaz_narz.setText(_translate("O_mnie", "Wykaz Narzędzi\nAutor: Jakub Hawro"))
+        self.opr_2.setText(_translate("O_mnie", version))
         self.wersja_pyt_2.setText(_translate("O_mnie", "Wersja Python:"))
         self.pyt_2.setText(_translate("O_mnie", python_version()))
         self.stopka.setText(_translate("O_mnie", url_link))

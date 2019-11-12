@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QGroupBox, QPushButton, \
     QHBoxLayout, QVBoxLayout, QLabel, QComboBox, QLineEdit, QTableView, \
     QAbstractItemView, QInputDialog, QMenu, QAction, QMessageBox
 
-from baza import multipolaczenie, polaczenie
+from baza import multipolaczenie, polaczenie, sciezka
 
 
 def naglowki():
@@ -32,7 +32,7 @@ class NarzPoz(QWidget):
         self.table = QTableView(self)
         self.table_narz = QTableView(self)
         db = QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('poo.db')
+        db.setDatabaseName(sciezka)
         if db.open():
             print('Otworzono bazę danych')
         self.model = QSqlTableModel(self, db)

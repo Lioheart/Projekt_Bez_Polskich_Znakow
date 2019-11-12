@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 # POŁĄCZENIE Z BAZĄ
+import os
 from sqlite3 import connect
+
+if os.path.exists(r'\\raspberrypi\PBPZ\poo.db'):
+    sciezka = r'\\raspberrypi\PBPZ\poo.db'
+else:
+    sciezka = 'poo.db'
 
 
 def polaczenie(query=None, tab=None):
-    con = connect('poo.db')
+    con = connect(sciezka)
 
     with con:
         cur = con.cursor()
@@ -23,7 +29,7 @@ def polaczenie(query=None, tab=None):
 
 
 def multipolaczenie(query=None, tab=None):
-    con = connect('poo.db')
+    con = connect(sciezka)
 
     with con:
         cur = con.cursor()
@@ -42,7 +48,7 @@ def multipolaczenie(query=None, tab=None):
 
 
 def update_bazy(query=None):
-    con = connect('poo.db')
+    con = connect(sciezka)
 
     with con:
         cur = con.cursor()
