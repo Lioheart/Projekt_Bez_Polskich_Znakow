@@ -819,6 +819,17 @@ def stylizacja(plik):
 
 
 def aplikacja():
+    from autoupdate import getResponse
+    from autoupdate import showDialog
+    import version
+    json = getResponse('https://api.github.com/repos/Lioheart/Projekt_Bez_Polskich_Znakow/releases/latest')
+    wersja = version.__version__
+    if json['tag_name'][1:] > wersja:
+        print('Nowa wersja')
+        showDialog(json['tag_name'][1:])
+    else:
+        print('Stara wersja')
+
     app = QApplication(sys.argv)
     from PyQt5.QtWidgets import QStyleFactory
     app.setStyle(QStyleFactory.create('Fusion'))

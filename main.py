@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from openpyxl import load_workbook
-
+import PyQt5
+import version
 from gui import aplikacja
 
 # Należy dodać Qt5Core.dll z głównej ścieżki do PyQT\Qt\bin

@@ -6,9 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QIcon
 
 
 class Ui_Form(object):
@@ -28,6 +26,7 @@ class Ui_Form(object):
         self.verticalLayout.addWidget(self.scrollArea)
 
         QtCore.QMetaObject.connectSlotsByName(Form)
+
 
 if __name__ == "__main__":
     import sys
