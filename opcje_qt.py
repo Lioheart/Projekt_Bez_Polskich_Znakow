@@ -490,13 +490,15 @@ class Wewnatrz(QWidget):
         n_p = NarzPoz(self.parent)
         self.parent.setCentralWidget(n_p)
 
-def wysylanie(text = None):
+def wysylanie(text = None, nazwa=0):
     import smtplib, ssl
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
     import time
 
     now = time.strftime("%c")
+    query = 'SELECT "nazwa_uz" FROM "uzytkownicy" WHERE iduzytkownicy IS ' + str(nazwa)
+    nazwa = polaczenie(query)
 
     sender_email = "thm@kuznia.com.pl"
     receiver_email = "jakubhawro@kuznia.com.pl"
@@ -504,7 +506,7 @@ def wysylanie(text = None):
 
     message = MIMEMultipart("alternative")
     message["Date"] = now
-    message["Subject"] = "Zgłoś problem PBPZ"
+    message["Subject"] = "Zgłoś problem PBPZ - ID: " + str(nazwa[0])
     message["From"] = sender_email
     message["To"] = receiver_email
 

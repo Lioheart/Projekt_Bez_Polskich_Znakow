@@ -414,7 +414,7 @@ class Window(QMainWindow):
             'Zgłoś problem',
             'Wpisz poniżej rodzaj problemu')
         if ok and tekst:
-            wysylanie(tekst)
+            wysylanie(tekst, self.id_user[0])
 
     def norma(self):
         from norma import Norma
@@ -822,7 +822,8 @@ def aplikacja():
     from autoupdate import getResponse
     from autoupdate import showDialog
     import version
-    json = getResponse('https://api.github.com/repos/Lioheart/Projekt_Bez_Polskich_Znakow/releases/latest')
+    json = getResponse(
+        'https://api.github.com/repos/Lioheart/Projekt_Bez_Polskich_Znakow/releases/latest')
     wersja = version.__version__
     if json['tag_name'][1:] > wersja:
         print('Nowa wersja')
