@@ -3,14 +3,16 @@
 import os
 import sys
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import QSortFilterProxyModel, Qt, pyqtSlot, QRegExp
+from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import QSortFilterProxyModel, Qt, pyqtSlot, QRegExp, \
+    QTranslator
 from PyQt5.QtGui import QIcon, QPalette, QColor, QCursor
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
     QHBoxLayout, QVBoxLayout, QLineEdit, QGroupBox, QDialog, QFormLayout, \
     QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog, \
-    QWidget, QComboBox, QTableView, QAbstractItemView, QMenu
+    QWidget, QComboBox, QTableView, QAbstractItemView, QMenu, QSystemTrayIcon, \
+    QGraphicsDropShadowEffect
 
 from baza import polaczenie, multipolaczenie, sciezka
 from opcje_qt import Wewnatrz, wysylanie
@@ -36,7 +38,8 @@ class Logowanie(QDialog):
         paleta = self.palette()
         paleta.setColor(QPalette.Highlight, QColor(233, 107, 57))
         self.setPalette(paleta)
-        # Usuwa ramkę
+
+                # Usuwa ramkę
         # self.setWindowFlags(Qt.FramelessWindowHint)
 
         # Dane okna formularza
@@ -45,7 +48,7 @@ class Logowanie(QDialog):
         self.login = QLineEdit()
         self.formularz = QGroupBox("Logowanie")
         self.title = 'Logowanie'
-        self.setWhatsThis('Pole logowania')
+        self.setWhatsThis('<h2>Pole logowania</h2>')
         self.width = 300
         self.height = 150
         self.init_ui()
@@ -53,6 +56,7 @@ class Logowanie(QDialog):
     def init_ui(self):
         self.setWindowTitle('Logowanie do wykazu narzędzi')
         self.setWindowIcon(QIcon('icons/cow.png'))
+        # self.setFixedWidth(self.width)
         self.setFixedSize(self.width, self.height)
 
         ok_button = QPushButton("OK")
@@ -356,13 +360,13 @@ class Window(QMainWindow):
         wysw_act2.triggered.connect(self.wyswietl)
 
         # Wydruk
-        wydr_act1 = QAction('Wydrukuj normy do pliku', self)
+        wydr_act1 = QAction('Wyeksportuj normy do pliku', self)
         # wydr_act1.setShortcut('Ctrl+Q')
         wydr_act1.triggered.connect(
             lambda checked, normyl=normy_lista: self.wybor_norma(
                 normyl)
         )
-        wydr_act2 = QAction('Wydrukuj wykaz narzędzi do pliku', self)
+        wydr_act2 = QAction('Wyeksportuj wykaz narzędzi do pliku', self)
         # wydr_act2.setShortcut('Ctrl+Q')
         # wydr_act2.triggered.connect(
         #     lambda checked, pozl=None: self.wybor(pozl)
@@ -389,7 +393,7 @@ class Window(QMainWindow):
 
         menubar = self.menuBar()
         wyswietlanie = menubar.addMenu('Wyświetl')
-        wydrukowanie = menubar.addMenu('Wydrukuj')
+        wydrukowanie = menubar.addMenu('Wyeksportuj')
         opcje = menubar.addMenu('Opcje')
         wyswietlanie.addAction(wysw_act1)
         wyswietlanie.addAction(wysw_act2)
@@ -834,6 +838,18 @@ def aplikacja():
     app = QApplication(sys.argv)
     from PyQt5.QtWidgets import QStyleFactory
     app.setStyle(QStyleFactory.create('Fusion'))
+
+    translator = QTranslator()
+    translator.load('./resources/qt_pl.qm')
+    app.installTranslator(translator)
+
+    # Dodanie czcionki do systemu i wybór na domyślny
+    # QtGui.QFontDatabase.addApplicationFont('Ribbons-and-banners.ttf')
+    # app.setFont(QtGui.QFont('Ribbons and banners',14))
+    # Otwarcie pliku stylów i użycie ich
+    # qss_file = open('Ubuntu.qss').read()
+    # app.setStyleSheet(qss_file)
+
     ex = Logowanie()
 
     if ex.exec_() == QtWidgets.QDialog.Accepted:

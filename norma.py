@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # NORMY - stoper
+import json
+
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSlot, QRegExp, Qt
 from PyQt5.QtGui import QKeySequence, QCursor, QPalette, QColor
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, \
@@ -57,34 +59,10 @@ class MultiDialog(QDialog):
         super(MultiDialog, self).__init__(parent)
 
         # lista wybieralna
-        maszyny = ['',
-                   'Frezarka AXA',
-                   'Frezarka Hi-V410D',
-                   'Frezarka manualna FWA41M',
-                   'Frezarka MAZAK HCN-5000-III',
-                   'Frezarka MAZAK VTC-200B-II',
-                   'Frezarka pozioma manulana',
-                   'Frezarka TBI',
-                   'Gwinciarka HCP',
-                   'Malowanie',
-                   'Tokarka CTX',
-                   'Tokarka Multiplex',
-                   'Tokarka SKT',
-                   'Tokarka TZC',
-                   'Wiertarka wieloosiowa'
-                   ]
-        operacje = ['',
-                    'Fazowanie',
-                    'I i II operacja',
-                    'I operacja',
-                    'II operacja',
-                    'III operacja',
-                    'Konserwacja',
-                    'Na gotowo',
-                    'Szyjka',
-                    'Toczenie',
-                    'Wiercenie'
-                    ]
+        with open('./resources/Maszyny i operacje.json', 'r') as file:
+            plik_json = json.load(file)
+        maszyny = plik_json['Maszyny']
+        operacje = plik_json['Operacje']
 
         paleta = self.palette()
         paleta.setColor(QPalette.Highlight, QColor(255, 0, 0))
@@ -174,6 +152,7 @@ class NormaOdk(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.skrot = QShortcut(QKeySequence(Qt.Key_Return), self)
+        # todo Dodaj pole 'nazwa operacji', a nr operacji zmień na int
         self.naglowki = {
             'iddetale': 'ID',
             'nr_detalu': 'Detal',
@@ -207,32 +186,10 @@ class NormaOdk(QWidget):
         self.tabela()
 
         # lista wybieralna
-        masz = ['Frezarka AXA',
-                'Frezarka Hi-V410D',
-                'Frezarka manualna FWA41M',
-                'Frezarka MAZAK HCN-5000-III',
-                'Frezarka MAZAK VTC-200B-II',
-                'Frezarka pozioma manulana',
-                'Frezarka TBI',
-                'Gwinciarka HCP',
-                'Malowanie',
-                'Tokarka CTX',
-                'Tokarka Multiplex',
-                'Tokarka SKT',
-                'Tokarka TZC',
-                'Wiertarka wieloosiowa'
-                ]
-        operacje = ['Fazowanie',
-                    'I i II operacja',
-                    'I operacja',
-                    'II operacja',
-                    'III operacja',
-                    'Konserwacja',
-                    'Na gotowo',
-                    'Szyjka',
-                    'Toczenie',
-                    'Wiercenie'
-                    ]
+        with open('./resources/Maszyny i operacje.json', 'r') as file:
+            plik_json = json.load(file)
+        masz = plik_json['Maszyny']
+        operacje = plik_json['Operacje']
         self.table.setItemDelegateForColumn(2, ComboDelegate(self, masz))
         self.table.setItemDelegateForColumn(5, ComboDelegate(self, operacje))
         for row in range(0, self.model.rowCount()):

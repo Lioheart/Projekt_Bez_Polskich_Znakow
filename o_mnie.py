@@ -8,6 +8,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 
 class Ui_O_mnie(object):
@@ -80,7 +81,7 @@ class Ui_O_mnie(object):
         self.wersja_opr_2 = QtWidgets.QLabel(self.gridLayoutWidget)
         self.wersja_opr_2.setObjectName("wersja_opr_2")
         self.gridLayout_3.addWidget(self.wersja_opr_2, 1, 0, 1, 1)
-        self.wersja_qt_2 = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.wersja_qt_2 = QtWidgets.QPushButton(self.gridLayoutWidget)
         self.wersja_qt_2.setObjectName("wersja_qt_2")
         self.gridLayout_3.addWidget(self.wersja_qt_2, 2, 0, 1, 1)
         self.wykaz_narz = QtWidgets.QLabel(self.gridLayoutWidget)
@@ -133,10 +134,8 @@ class Ui_O_mnie(object):
             import os
             if os.path.exists('version'):
                 os.remove('version/__init__.py')
-                # version = '__version__ = "0.2.1"'
             else:
                 os.mkdir('version')
-                # version = '__version__ = 0.2.1'
             file = open('version\__init__.py', 'w', -1, 'utf-8')
             file.write('__version__ = "{}"'.format(version))
             file.close()
@@ -167,6 +166,12 @@ class Ui_O_mnie(object):
         self.pyt_2.setText(_translate("O_mnie", python_version().upper()))
         self.stopka.setText(_translate("O_mnie", url_link.upper()))
 
+        self.wersja_qt_2.setFlat(True)
+        self.wersja_qt_2.setStyleSheet("QPushButton { text-align: left; }")
+        self.wersja_qt_2.clicked.connect(self.o_qt)
+
+    def o_qt(self):
+        QMessageBox.aboutQt(None)
 
 if __name__ == "__main__":
     import sys

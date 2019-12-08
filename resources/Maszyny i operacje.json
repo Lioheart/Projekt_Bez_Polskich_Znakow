@@ -1,0 +1,30 @@
+{
+    "Maszyny": [
+        "Frezarka AXA",
+        "Frezarka Hi-V410D",
+        "Frezarka manualna FWA41M",
+        "Frezarka MAZAK HCN-5000-III",
+        "Frezarka MAZAK VTC-200B-II",
+        "Frezarka pozioma manulana",
+        "Frezarka TBI",
+        "Gwinciarka HCP",
+        "Malowanie",
+        "Tokarka CTX",
+        "Tokarka Multiplex",
+        "Tokarka SKT",
+        "Tokarka TZC",
+        "Wiertarka wieloosiowa"
+    ],
+    "Operacje": [
+        "Fazowanie",
+        "I i II operacja",
+        "I operacja",
+        "II operacja",
+        "III operacja",
+        "Konserwacja",
+        "Na gotowo",
+        "Szyjka",
+        "Toczenie",
+        "Wiercenie"
+    ]
+}

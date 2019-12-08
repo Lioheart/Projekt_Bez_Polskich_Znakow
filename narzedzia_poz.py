@@ -65,7 +65,7 @@ class NarzPoz(QWidget):
         # Zatwierdzenie
         ok_button = QPushButton("Dodaj do pozycji")
         cancel_button = QPushButton("Cofnij")
-        wydrukuj_btn = QPushButton("Wydrukuj")
+        wydrukuj_btn = QPushButton("Wyeksportuj")
         usun_btn = QPushButton("Usuń pozycję")
         dodaj_btn = QPushButton("Dodaj pozycję")
         hbox = QHBoxLayout()
