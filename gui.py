@@ -583,6 +583,7 @@ class Window(QMainWindow):
 
                 if 'Normy' in lista_arg:
                     stylizacja(file_name)
+                    pass
                 else:
                     styl_pozycje(file_name, lista_arg[0][-7:])
 
@@ -774,30 +775,35 @@ def stylizacja(plik):
         'Detal',
         'Maszyna',
         'Ilość maszyn',
-        'Ilość raportowanych sztuk',
-        'Numer operacji',
+        'Ilość sztuk na operację',
+        'Nr op.',
+        'Nazwa operacji',
+        'Tj',
         'Norma',
         'Uwagi'
     ]
 
     szer = 0.71
     szer_lista = [
-        7.14,
-        11.86,
-        11.29,
-        23.43,
-        14.14,
-        6.29,
-        20
+        7.29,
+        26.57,
+        13.57,
+        22.57,
+        8,
+        16.14,
+        7.29,
+        8.57,
+        16
     ]
     work = load_workbook(plik)
     worksheet = work[work.sheetnames[0]]
     worksheet.insert_rows(0)
-    worksheet.delete_cols(12)
-    worksheet.delete_cols(7, 3)
+    worksheet.delete_cols(13)
+    worksheet.delete_cols(9)
+    worksheet.delete_cols(8)
     worksheet.delete_cols(1)
 
-    for h in range(7):
+    for h in range(9):
         worksheet.column_dimensions[get_column_letter(h + 1)].width = \
             szer_lista[h] + szer
 
@@ -805,7 +811,7 @@ def stylizacja(plik):
         worksheet.cell(row=1, column=i + 1).value = col
 
     # tabela
-    rozmiar = 'A1:G' + str(len(worksheet['A']))
+    rozmiar = 'A1:I' + str(len(worksheet['A']))
     tab = Table(displayName='Table1', ref=rozmiar)
     style = TableStyleInfo(
         name='TableStyleMedium1',

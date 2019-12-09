@@ -59,7 +59,8 @@ class MultiDialog(QDialog):
         super(MultiDialog, self).__init__(parent)
 
         # lista wybieralna
-        with open('./resources/Maszyny i operacje.json', 'r') as file:
+        with open('./resources/Maszyny i operacje.json', 'r',
+                  encoding='utf-8') as file:
             plik_json = json.load(file)
         maszyny = plik_json['Maszyny']
         operacje = plik_json['Operacje']
@@ -152,14 +153,14 @@ class NormaOdk(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
         self.skrot = QShortcut(QKeySequence(Qt.Key_Return), self)
-        # todo Dodaj pole 'nazwa operacji', a nr operacji zmień na int
         self.naglowki = {
             'iddetale': 'ID',
             'nr_detalu': 'Detal',
             'maszyna': 'Maszyna',
             "ilosc_m": 'Ilość maszyn',
-            'ilosc_szt': 'Ilość raportowanych sztuk',
-            'nr_operacji': 'Nr operacji',
+            'ilosc_szt': 'Ilość sztuk na operację',
+            'nazwa_op': 'Nazwa operacji',
+            'nr_op': 'Nr operacji',
             'tm': 'Czas Tm [s]',
             'tp': 'Czas Tp [s]',
             'tj': 'Czas Tj [h]',
@@ -186,15 +187,16 @@ class NormaOdk(QWidget):
         self.tabela()
 
         # lista wybieralna
-        with open('./resources/Maszyny i operacje.json', 'r') as file:
+        with open('./resources/Maszyny i operacje.json', 'r',
+                  encoding='utf-8') as file:
             plik_json = json.load(file)
         masz = plik_json['Maszyny']
         operacje = plik_json['Operacje']
         self.table.setItemDelegateForColumn(2, ComboDelegate(self, masz))
-        self.table.setItemDelegateForColumn(5, ComboDelegate(self, operacje))
+        self.table.setItemDelegateForColumn(6, ComboDelegate(self, operacje))
         for row in range(0, self.model.rowCount()):
             self.table.openPersistentEditor(self.model.index(row, 2))
-            self.table.openPersistentEditor(self.model.index(row, 5))
+            self.table.openPersistentEditor(self.model.index(row, 6))
 
         # Zatwierdzenie
         ok_button = QPushButton("Dodaj")
@@ -315,7 +317,7 @@ class NormaOdk(QWidget):
 
     def tabela(self):
         self.model.setTable('detale')
-        self.model.setRelation(11, QSqlRelation('uzytkownicy', 'iduzytkownicy',
+        self.model.setRelation(12, QSqlRelation('uzytkownicy', 'iduzytkownicy',
                                                 'nazwa_uz'))
         # Za zmianę w bazie odpowiada OnFieldChange
         self.model.setEditStrategy(QSqlTableModel.OnFieldChange)
@@ -369,7 +371,7 @@ class NormaOdk(QWidget):
         print(poz, masz, op, tm, tp, ok)
         id = self.parent.id_user[0]
         if ok and poz:
-            query = "INSERT INTO detale(nr_detalu,maszyna,nr_operacji,tm,tp," \
+            query = "INSERT INTO detale(nr_detalu,maszyna,nazwa_op,tm,tp," \
                     "id_uzytkownika) VALUES ('" + poz + "','" + masz + "','" + op + "','" + tm + "','" + tp + "','" + str(
                 id) + "');"
             print(query)
@@ -427,7 +429,7 @@ class NormaKol(NormaOdk):
 
     def tabela(self):
         self.model.setTable('kolnierze')
-        self.model.setRelation(11, QSqlRelation('uzytkownicy', 'iduzytkownicy',
+        self.model.setRelation(12, QSqlRelation('uzytkownicy', 'iduzytkownicy',
                                                 'nazwa_uz'))
         # Za zmianę w bazie odpowiada OnFieldChange
         self.model.setEditStrategy(QSqlTableModel.OnFieldChange)
@@ -460,7 +462,7 @@ class NormaKol(NormaOdk):
         print(poz, masz, op, tm, tp, ok)
         id = self.parent.id_user[0]
         if ok and poz:
-            query = "INSERT INTO kolnierze(nr_detalu,maszyna,nr_operacji,tm,tp," \
+            query = "INSERT INTO kolnierze(nr_detalu,maszyna,nazwa_op,tm,tp," \
                     "id_uzytkownika) VALUES ('" + poz + "','" + masz + "','" + op + "','" + tm + "','" + tp + "','" + str(
                 id) + "');"
             print(query)
