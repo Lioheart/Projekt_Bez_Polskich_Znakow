@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 # POŁĄCZENIE Z BAZĄ
 import os
+import sys
 from sqlite3 import connect
 
-if os.path.exists(r'\\raspberrypi\PBPZ\poo.db'):
-    sciezka = r'\\raspberrypi\PBPZ\poo.db'
+from dropbox_base import download, backup
+
+if os.path.exists('./poo.db'):
+    sciezka = './poo.db'
 else:
-    sciezka = 'poo.db'
+    print('Nie znaleziono bazy')
+    sys.exit()
 
 
 def polaczenie(query=None, tab=None):
@@ -33,7 +37,7 @@ def multipolaczenie(query=None, tab=None):
 
     with con:
         cur = con.cursor()
-        print("Połączono z bazą danych")
+        print("Połączono z bazą danych (multi)")
 
         if query and tab is None:
             cur.execute(query)
@@ -52,7 +56,8 @@ def update_bazy(query=None):
 
     with con:
         cur = con.cursor()
-        print("Połączono z bazą danych")
+        # print("Połączono z bazą danych")
+        print('Update bazy')
 
         cur.execute(query)
 

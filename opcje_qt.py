@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QWidget, QComboBox, QGridLayout, QHBoxLayout, \
     QMessageBox, QToolButton
 
 from baza import polaczenie
+from dropbox_base import backup
 from narzedzia_poz import NarzPoz
 from norma import Norma
 
@@ -309,6 +310,7 @@ class WprowadzNarzedzia(QWidget):
         else:
             polaczenie(query, tab)
             self.parent.statusBar().showMessage("Dodano narzędzie", 10000)
+            backup()
 
         # czyszczenie po dodaniu narzędzia
         self.symbol_edit.setText('')

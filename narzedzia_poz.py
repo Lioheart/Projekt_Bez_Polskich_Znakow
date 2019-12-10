@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QWidget, QGroupBox, QPushButton, \
     QAbstractItemView, QInputDialog, QMenu, QAction, QMessageBox
 
 from baza import multipolaczenie, polaczenie, sciezka
+from dropbox_base import backup
 
 
 def naglowki():
@@ -163,6 +164,7 @@ class NarzPoz(QWidget):
                 self.combo_poz.removeItem(indeks)
                 self.parent.statusBar().showMessage(
                     "Usunięto pozycję", 10000)
+                backup()
             else:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
@@ -186,6 +188,7 @@ class NarzPoz(QWidget):
         self.model_poz.select()
         self.parent.statusBar().showMessage(
             "Usunięto narzędzie", 10000)
+        backup()
 
     def dodaj_poz(self):
         text, ok = QInputDialog.getText(self, 'Wprowadź pozycje', 'Pozycja:')
@@ -203,6 +206,7 @@ class NarzPoz(QWidget):
             self.naglowki_kolumn()
             self.parent.statusBar().showMessage(
                 "Dodano pozycję " + text, 10000)
+            backup()
         else:
             print("Nie wpisano pozycji")
 
@@ -352,6 +356,7 @@ class NarzPoz(QWidget):
             self.parent.statusBar().showMessage(
                 "Dodano narzędzie " + nazwa + " do pozycji " + self.model_poz.tableName(),
                 10000)
+            backup()
         else:
             print(self.model_poz.tableName())
             print("Brak wybranego narzędzia")

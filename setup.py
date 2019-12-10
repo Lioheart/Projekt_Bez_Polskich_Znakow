@@ -13,7 +13,7 @@ setup(
     author='Jakub Hawro',
     author_email='',
     description='Program na wewnętrzne potrzeby Kuźni Jawor',
-    requires=['PyQt5', 'openpyxl', 'XlsxWriter', 'Pillow'],
+    requires=['PyQt5', 'openpyxl', 'XlsxWriter', 'Pillow', 'dropbox'],
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
 )

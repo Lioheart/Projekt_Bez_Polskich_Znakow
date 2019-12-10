@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, \
     QMenu, QAction, QMessageBox, QDialog, QGridLayout, QTabWidget
 
 from baza import multipolaczenie, update_bazy, polaczenie, sciezka
+from dropbox_base import backup
 
 
 class ComboDelegate(QItemDelegate):
@@ -256,6 +257,7 @@ class NormaOdk(QWidget):
             self.model.removeRow(selected.row())
             self.model.submitAll()
             self.model.select()
+            backup()
 
     @pyqtSlot(str)
     def wyszukiwanie(self, text):
@@ -305,6 +307,7 @@ class NormaOdk(QWidget):
             update_bazy(query)
             # query = 'UPDATE "detale" SET "norma" = ' + str(round(norma)) +
             # ' WHERE "iddetale" = ' + str(dane_db[i][0]) update_bazy(query)
+        backup()
 
     @pyqtSlot()
     def refresh_db(self):
@@ -383,6 +386,7 @@ class NormaOdk(QWidget):
                     pass
             self.model.select()
             self.parent.statusBar().showMessage("Dodano nową pozycję", 10000)
+            backup()
         else:
             print("Nie wpisano pozycji")
 
@@ -426,6 +430,7 @@ class NormaKol(NormaOdk):
             update_bazy(query)
             # query = 'UPDATE "detale" SET "norma" = ' + str(round(norma)) +
             # ' WHERE "iddetale" = ' + str(dane_db[i][0]) update_bazy(query)
+        backup()
 
     def tabela(self):
         self.model.setTable('kolnierze')
@@ -474,5 +479,6 @@ class NormaKol(NormaOdk):
                     pass
             self.model.select()
             self.parent.statusBar().showMessage("Dodano nową pozycję", 10000)
+            backup()
         else:
             print("Nie wpisano pozycji")

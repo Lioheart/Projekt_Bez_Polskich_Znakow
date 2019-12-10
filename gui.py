@@ -3,7 +3,7 @@
 import os
 import sys
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSortFilterProxyModel, Qt, pyqtSlot, QRegExp, \
     QTranslator
 from PyQt5.QtGui import QIcon, QPalette, QColor, QCursor
@@ -11,10 +11,10 @@ from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
     QHBoxLayout, QVBoxLayout, QLineEdit, QGroupBox, QDialog, QFormLayout, \
     QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog, \
-    QWidget, QComboBox, QTableView, QAbstractItemView, QMenu, QSystemTrayIcon, \
-    QGraphicsDropShadowEffect
+    QWidget, QComboBox, QTableView, QAbstractItemView, QMenu
 
 from baza import polaczenie, multipolaczenie, sciezka
+from dropbox_base import download, backup
 from opcje_qt import Wewnatrz, wysylanie
 from uzytkownicy import opcje_uzytkownik, dodaj_uzytkownik, zmiana_uzytkownik
 
@@ -39,7 +39,7 @@ class Logowanie(QDialog):
         paleta.setColor(QPalette.Highlight, QColor(233, 107, 57))
         self.setPalette(paleta)
 
-                # Usuwa ramkę
+        # Usuwa ramkę
         # self.setWindowFlags(Qt.FramelessWindowHint)
 
         # Dane okna formularza
@@ -212,6 +212,7 @@ class Wyswietl(QWidget):
             self.model.submitAll()
             self.model.select()
             self.parent.statusBar().showMessage("Usunięto narzędzie", 10000)
+            backup()
 
     def onActiveNarz(self, tekst):
         slownik = {
@@ -434,6 +435,7 @@ class Window(QMainWindow):
                                         'Wprowadź nowego użytkownika:')
         if ok and text:
             dodaj_uzytkownik(text)
+            backup()
         self.statusBar().showMessage("Dodano nowego użytkownika", 10000)
 
     def zm_loginu(self):
@@ -441,6 +443,7 @@ class Window(QMainWindow):
                                         'Wprowadź nową nazwę użytkownika:')
         if ok and text:
             zmiana_uzytkownik(text, id_user)
+            backup()
         self.statusBar().showMessage("Zmieniono nazwę użytkownika", 10000)
 
     def uzytkownik(self):
@@ -449,6 +452,7 @@ class Window(QMainWindow):
                                         QLineEdit.Password)
         if ok and text:
             opcje_uzytkownik(text, id_user)
+            backup()
             self.statusBar().showMessage("Zmieniono hasło", 10000)
 
     def lista_uz(self):
@@ -487,6 +491,7 @@ class Window(QMainWindow):
                 id_user[0]) + '");'
             polaczenie(query)
             self.statusBar().showMessage("Usunięto użytkownika", 10000)
+            backup()
 
     def about(self):
         self.window = QMainWindow()
@@ -840,6 +845,9 @@ def aplikacja():
         showDialog(json['tag_name'][1:])
     else:
         print('Stara wersja')
+
+    # Pobranie bazy
+    download()
 
     app = QApplication(sys.argv)
     from PyQt5.QtWidgets import QStyleFactory
