@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # GŁÓWNE MENU
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QPalette, QColor, QIcon
+from PyQt5.QtGui import QPalette, QColor, QIcon, QPainter
 from PyQt5.QtWidgets import QWidget, QComboBox, QGridLayout, QHBoxLayout, \
     QPushButton, QLabel, QVBoxLayout, QLineEdit, QGroupBox, QFormLayout, \
-    QMessageBox, QToolButton
+    QMessageBox, QToolButton, QSizePolicy, QStyleOptionButton, QStyle
 
 from baza import polaczenie
 from dropbox_base import backup
@@ -436,6 +436,38 @@ class WprowadzNarzedzia(QWidget):
             self.dodanie()
 
 
+# Klasa odpowiedzialna za resize ikon
+class myPushButton(QPushButton):
+    def __init__(self, label=None, parent=None):
+        super(myPushButton, self).__init__(label, parent)
+
+        self.pad = 4  # padding between the icon and the button frame
+        self.minSize = 8  # minimum size of the icon
+
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding,
+                                 QSizePolicy.Expanding)
+        self.setSizePolicy(sizePolicy)
+
+    def paintEvent(self, event):
+        qp = QPainter()
+        qp.begin(self)
+
+        # ---- get default style ----
+        opt = QStyleOptionButton()
+        self.initStyleOption(opt)
+
+        # ---- scale icon to button size ----
+        Rect = opt.rect
+        h = Rect.height()
+        w = Rect.width()
+        iconSize = max(min(h, w) - 2 * self.pad, self.minSize)
+        opt.iconSize = QSize(iconSize, iconSize)
+
+        # ---- draw button ----
+        self.style().drawControl(QStyle.CE_PushButton, opt, qp, self)
+        qp.end()
+
+
 class Wewnatrz(QWidget):
     def __init__(self, parent):
         super(QWidget, self).__init__(parent)
@@ -492,14 +524,16 @@ class Wewnatrz(QWidget):
         n_p = NarzPoz(self.parent)
         self.parent.setCentralWidget(n_p)
 
-def wysylanie(text = None, nazwa=0):
+
+def wysylanie(text=None, nazwa=0):
     import smtplib, ssl
     from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
     import time
 
     now = time.strftime("%c")
-    query = 'SELECT "nazwa_uz" FROM "uzytkownicy" WHERE iduzytkownicy IS ' + str(nazwa)
+    query = 'SELECT "nazwa_uz" FROM "uzytkownicy" WHERE iduzytkownicy IS ' + str(
+        nazwa)
     nazwa = polaczenie(query)
 
     sender_email = "thm@kuznia.com.pl"

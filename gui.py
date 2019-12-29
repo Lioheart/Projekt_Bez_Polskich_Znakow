@@ -5,7 +5,7 @@ import sys
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSortFilterProxyModel, Qt, pyqtSlot, QRegExp, \
-    QTranslator
+    QTranslator, QSettings
 from PyQt5.QtGui import QIcon, QPalette, QColor, QCursor
 from PyQt5.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
@@ -330,6 +330,10 @@ class Window(QMainWindow):
         self.title = 'Wykaz narzędzi'
         self.width = 1440
         self.height = 900
+        # Odpowiedzialne za utrzymanie rozmiaru i pozycji
+        self.settings = QSettings('Kuźnia Jawor', 'PBPZ')
+        geometry = self.settings.value('geometria', bytes('', 'utf-8'))
+        self.restoreGeometry(geometry)
 
         # Edycja podwietlenia głównego okna
         paleta = self.palette()
@@ -337,6 +341,12 @@ class Window(QMainWindow):
         self.setPalette(paleta)
 
         self.initUI()
+
+    # Odpowiedzialne za utrzymanie rozmiaru i pozycji
+    def closeEvent(self, event):
+        geometry = self.saveGeometry()
+        self.settings.setValue('geometria', geometry)
+        super(Window, self).closeEvent(event)
 
     def initUI(self):
         normy_lista = (

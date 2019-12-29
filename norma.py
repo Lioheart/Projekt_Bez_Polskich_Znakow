@@ -403,7 +403,7 @@ class NormaKol(NormaOdk):
             tp1 = dane_db[i][2]
             ilosc_m = dane_db[i][3]
             ilosc_szt = dane_db[i][4]
-            if not ilosc_m:
+            if not ilosc_m or ilosc_m == 1:
                 ilosc_m = 1
                 zm = 1
             else:
