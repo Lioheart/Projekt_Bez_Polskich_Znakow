@@ -10,7 +10,6 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QIcon
 
 from baza import polaczenie
-from dropbox_base import backup
 
 
 class Ui_H_Form(object):
@@ -56,7 +55,6 @@ class Ui_H_Form(object):
             login = str(self.input_msg.textValue())
             query = 'UPDATE uzytkownicy SET nazwa_uz = "' + login + '" WHERE iduzytkownicy = ' + id + ';'
             polaczenie(query)
-            backup()
 
     def zmien_haslo(self):
         from PyQt5.QtWidgets import QInputDialog
@@ -72,7 +70,6 @@ class Ui_H_Form(object):
             haslo = str(self.input_msgh.textValue())
             query = 'UPDATE uzytkownicy SET haslo_uz = "' + haslo + '" WHERE iduzytkownicy = ' + id + ';'
             polaczenie(query)
-            backup()
 
     def usun_konto(self):
         from PyQt5.QtWidgets import QMessageBox
@@ -98,7 +95,6 @@ class Ui_H_Form(object):
             self.login.hide()
             self.horizontalLayout.removeWidget(self.usun)
             self.usun.hide()
-            backup()
 
 
 if __name__ == "__main__":

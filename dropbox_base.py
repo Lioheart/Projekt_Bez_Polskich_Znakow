@@ -8,8 +8,8 @@ from dropbox.files import WriteMode
 
 from dropbox_token import TOKEN
 
-LOCALFILE = r'\\raspberrypi\PBPZ\poo.db'
-BACKUPPATH = '/poo.db'  # Keep the forward slash before destination filename
+FILE = r'\\Raspberrypi\PBPZ\poo.db'
+BACKUP_PATH = '/poo.db'  # Keep the forward slash before destination filename
 
 
 def _auth():
@@ -18,12 +18,13 @@ def _auth():
         dbx.users_get_current_account()
     except AuthError as err:
         sys.exit(
-            "BŁĄD: Błędny Token; Spróbuj wygenerować nowy token")
+            "BŁĄD: Błędny Token; Spróbuj wygenerować nowy token"
+        )
     return dbx
 
 
 # Uploads contents of LOCALFILE to Dropbox
-def backup(BACKUPPATH='/poo.db', LOCALFILE='./poo.db'):
+def backup(BACKUPPATH=BACKUP_PATH, LOCALFILE=FILE):
     """Wgrywa plik na dropboxa. Wymaga LOCALFILE i BACKUPPATCH"""
     dbx = _auth()
     with open(LOCALFILE, 'rb') as f:
@@ -49,13 +50,13 @@ def backup(BACKUPPATH='/poo.db', LOCALFILE='./poo.db'):
                 sys.exit()
 
 
-def download(FILE='./poo.db'):
+def download(LOCALFILE=FILE):
     dbx = _auth()
-    if os.path.exists(FILE):
-        os.remove(FILE)
+    if os.path.exists(LOCALFILE):
+        os.remove(LOCALFILE)
     try:
-        with open(FILE, "wb") as f:
-            metadata, res = dbx.files_download(path=BACKUPPATH)
+        with open(LOCALFILE, "wb") as f:
+            metadata, res = dbx.files_download(path=BACKUP_PATH)
             f.write(res.content)
         print('Pobrano bazę danych')
         return True
@@ -72,6 +73,6 @@ if __name__ == '__main__':
             "BŁĄD: Błędny Token; Spróbuj wygenerować nowy token")
 
     print('Wgrywanie')
-    backup(LOCALFILE=LOCALFILE)
+    backup(LOCALFILE=FILE)
     print('Pobieranie')
     download()

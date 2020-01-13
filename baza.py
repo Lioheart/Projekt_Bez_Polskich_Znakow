@@ -4,16 +4,17 @@ import os
 import sys
 from sqlite3 import connect
 
-from dropbox_base import download, backup
 
-if os.path.exists('./poo.db'):
-    sciezka = './poo.db'
-else:
-    print('Nie znaleziono bazy')
-    sys.exit()
+def czy_istnieje():
+    if os.path.exists(r'\\Raspberrypi\PBPZ\poo.db'):
+        return r'\\Raspberrypi\PBPZ\poo.db'
+    else:
+        print('Nie znaleziono bazy. Brak połączenia.')
+        sys.exit()
 
 
 def polaczenie(query=None, tab=None):
+    sciezka = czy_istnieje()
     con = connect(sciezka)
 
     with con:
@@ -33,6 +34,7 @@ def polaczenie(query=None, tab=None):
 
 
 def multipolaczenie(query=None, tab=None):
+    sciezka = czy_istnieje()
     con = connect(sciezka)
 
     with con:
@@ -52,6 +54,7 @@ def multipolaczenie(query=None, tab=None):
 
 
 def update_bazy(query=None):
+    sciezka = czy_istnieje()
     con = connect(sciezka)
 
     with con:

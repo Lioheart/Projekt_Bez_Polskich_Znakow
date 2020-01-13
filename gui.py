@@ -13,8 +13,8 @@ from PyQt5.QtWidgets import QApplication, QDesktopWidget, QPushButton, \
     QLabel, QMainWindow, QAction, QInputDialog, QMessageBox, QFileDialog, \
     QWidget, QComboBox, QTableView, QAbstractItemView, QMenu
 
-from baza import polaczenie, multipolaczenie, sciezka
-from dropbox_base import download, backup
+from baza import polaczenie, multipolaczenie, czy_istnieje
+from dropbox_base import backup, download
 from opcje_qt import Wewnatrz, wysylanie
 from uzytkownicy import opcje_uzytkownik, dodaj_uzytkownik, zmiana_uzytkownik
 
@@ -133,6 +133,7 @@ class Wyswietl(QWidget):
         self.lbl_wysz = QLabel("Wyszukaj")
         self.lbl_typ = QLabel("Wybierz typ narzędzia:")
         self.table = QTableView(self)
+        sciezka = czy_istnieje()
         db = QSqlDatabase.addDatabase('QSQLITE')
         db.setDatabaseName(sciezka)
         if db.open():
@@ -212,7 +213,6 @@ class Wyswietl(QWidget):
             self.model.submitAll()
             self.model.select()
             self.parent.statusBar().showMessage("Usunięto narzędzie", 10000)
-            backup()
 
     def onActiveNarz(self, tekst):
         slownik = {
@@ -385,6 +385,7 @@ class Window(QMainWindow):
         wydr_act2.triggered.connect(self.wybor)
 
         # Opcje
+        # TODO Dodać opcję zapisu do Dropboxa i pobrania bazy jedynie dla odpowiednich użytkowników
         opcje_act1 = QAction('Zmiana hasła', self)
         # wydr_act1.setShortcut('Ctrl+Q')
         opcje_act1.triggered.connect(self.uzytkownik)
@@ -401,6 +402,10 @@ class Window(QMainWindow):
         opcje_act6.triggered.connect(self.zm_loginu)
         opcje_act7 = QAction('Zgłoś problem', self)
         opcje_act7.triggered.connect(self.problem)
+        opcje_act8 = QAction('Wyślij bazę na Dropboxa', self)
+        opcje_act8.triggered.connect(self.drp_backup)
+        opcje_act9 = QAction('Pobierz bazę z Dropboxa', self)
+        opcje_act9.triggered.connect(self.drp_download)
 
         menubar = self.menuBar()
         wyswietlanie = menubar.addMenu('Wyświetl')
@@ -417,6 +422,8 @@ class Window(QMainWindow):
             opcje.addSeparator()
             opcje.addAction(opcje_act2)
             opcje.addAction(opcje_act5)
+            opcje.addAction(opcje_act8)
+            opcje.addAction(opcje_act9)
         opcje.addSeparator()
         opcje.addAction(opcje_act7)
         opcje.addAction(opcje_act3)
@@ -430,6 +437,12 @@ class Window(QMainWindow):
             'Wpisz poniżej rodzaj problemu')
         if ok and tekst:
             wysylanie(tekst, self.id_user[0])
+
+    def drp_download(self):
+        download()
+
+    def drp_backup(self):
+        backup()
 
     def norma(self):
         from norma import Norma
@@ -445,7 +458,6 @@ class Window(QMainWindow):
                                         'Wprowadź nowego użytkownika:')
         if ok and text:
             dodaj_uzytkownik(text)
-            backup()
         self.statusBar().showMessage("Dodano nowego użytkownika", 10000)
 
     def zm_loginu(self):
@@ -453,7 +465,6 @@ class Window(QMainWindow):
                                         'Wprowadź nową nazwę użytkownika:')
         if ok and text:
             zmiana_uzytkownik(text, id_user)
-            backup()
         self.statusBar().showMessage("Zmieniono nazwę użytkownika", 10000)
 
     def uzytkownik(self):
@@ -462,7 +473,6 @@ class Window(QMainWindow):
                                         QLineEdit.Password)
         if ok and text:
             opcje_uzytkownik(text, id_user)
-            backup()
             self.statusBar().showMessage("Zmieniono hasło", 10000)
 
     def lista_uz(self):
@@ -501,7 +511,6 @@ class Window(QMainWindow):
                 id_user[0]) + '");'
             polaczenie(query)
             self.statusBar().showMessage("Usunięto użytkownika", 10000)
-            backup()
 
     def about(self):
         self.window = QMainWindow()
@@ -576,6 +585,7 @@ class Window(QMainWindow):
             print(file_name)
 
             import sqlite3
+            sciezka = czy_istnieje()
             conn = sqlite3.connect(sciezka)
             cursor = conn.cursor()
             mysel = cursor.execute(lista_arg[1])
@@ -854,10 +864,7 @@ def aplikacja():
         print('Nowa wersja')
         showDialog(json['tag_name'][1:])
     else:
-        print('Stara wersja')
-
-    # Pobranie bazy
-    download()
+        print('Aktualna wersja')
 
     app = QApplication(sys.argv)
     from PyQt5.QtWidgets import QStyleFactory

@@ -15,7 +15,7 @@ class Ui_O_mnie(object):
     def setupUi(self, O_mnie):
         O_mnie.setObjectName("O_mnie")
         O_mnie.resize(527, 320)
-        O_mnie.setFixedSize(527, 320)
+        # O_mnie.setFixedSize(527, 320)
         palette = QtGui.QPalette()
 
         grad = QtGui.QLinearGradient(0, 320, 527, 320)

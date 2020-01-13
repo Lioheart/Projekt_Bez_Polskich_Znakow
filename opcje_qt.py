@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QWidget, QComboBox, QGridLayout, QHBoxLayout, \
     QMessageBox, QToolButton, QSizePolicy, QStyleOptionButton, QStyle
 
 from baza import polaczenie
-from dropbox_base import backup
 from narzedzia_poz import NarzPoz
 from norma import Norma
 
@@ -310,7 +309,6 @@ class WprowadzNarzedzia(QWidget):
         else:
             polaczenie(query, tab)
             self.parent.statusBar().showMessage("Dodano narzędzie", 10000)
-            backup()
 
         # czyszczenie po dodaniu narzędzia
         self.symbol_edit.setText('')
@@ -562,3 +560,11 @@ def wysylanie(text=None, nazwa=0):
         )
 
     print('Wysłano')
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Information)
+    msg.setWindowIcon(QIcon('icons/cow.png'))
+    msg.setText("Zgłoszono błąd i nastąpi jego rozpatrzenie.")
+    msg.setInformativeText("Dziękujemy za uwagi.")
+    msg.setWindowTitle("Zgłoszono uwagę")
+    msg.setStandardButtons(QMessageBox.Ok)
+    msg.exec_()
