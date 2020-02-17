@@ -854,6 +854,7 @@ def stylizacja(plik):
 
 
 def aplikacja():
+    '''
     from autoupdate import getResponse
     from autoupdate import showDialog
     import version
@@ -865,6 +866,7 @@ def aplikacja():
         showDialog(json['tag_name'][1:])
     else:
         print('Aktualna wersja')
+    '''
 
     app = QApplication(sys.argv)
     from PyQt5.QtWidgets import QStyleFactory
